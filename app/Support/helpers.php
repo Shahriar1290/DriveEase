@@ -54,14 +54,21 @@ if (!function_exists('maintenance_status_badge')) {
 if (!function_exists('vehicle_image_url')) {
     function vehicle_image_url(?string $path): string
     {
-        return $path ? asset('storage/' . $path) : asset('images/vehicle-default.jpg');
+        if ($path && file_exists(public_path('storage/' . $path))) {
+            return asset('storage/' . $path);
+        }
+        $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" fill="#e2e8f0"><rect width="400" height="200" rx="8"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#94a3b8" font-size="18" font-family="sans-serif">No Image Available</text></svg>';
+        return 'data:image/svg+xml;base64,' . base64_encode($svg);
     }
 }
 
 if (!function_exists('category_image_url')) {
     function category_image_url(?string $path): string
     {
-        return $path ? asset('storage/' . $path) : asset('images/category-default.jpg');
+        if ($path && file_exists(public_path('storage/' . $path))) {
+            return asset('storage/' . $path);
+        }
+        return 'data:image/svg+xml,' . urlencode('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="#e2e8f0"><rect width="100" height="100" rx="8"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#94a3b8" font-size="14" font-family="sans-serif">No Image</text></svg>');
     }
 }
 
