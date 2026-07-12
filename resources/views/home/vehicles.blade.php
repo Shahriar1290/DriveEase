@@ -135,8 +135,7 @@
                     <div class="vehicle-grid-card card h-100">
                         <div class="position-relative">
                             <img src="{{ vehicle_image_url($vehicle->primary_image) }}"
-                                 class="card-img-top" alt="{{ $vehicle->vehicle_name }}"
-                                 onerror="this.src='https://placehold.co/400x190/1e40af/fff?text={{ urlencode($vehicle->vehicle_name) }}'">
+                                 class="card-img-top" alt="{{ $vehicle->vehicle_name }}">
                             <span class="position-absolute top-0 start-0 m-2 badge bg-success">Available</span>
                             @auth @if(auth()->user()->isCustomer())
                             <form action="{{ route('customer.wishlist.toggle') }}" method="POST" class="d-inline">

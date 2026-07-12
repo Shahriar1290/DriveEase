@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @stack('styles')
 </head>
@@ -147,40 +147,40 @@
                         <span class="text-primary">Drive</span>Ease
                     </a>
                 </div>
-                <p class="text-muted small">Your trusted vehicle rental partner. We offer a wide range of vehicles for every need and budget.</p>
+                <p class="text-light small">Your trusted vehicle rental partner. We offer a wide range of vehicles for every need and budget.</p>
                 <div class="d-flex gap-3 mt-3">
-                    <a href="#" class="text-muted fs-5"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="text-muted fs-5"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="text-muted fs-5"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="text-muted fs-5"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="text-light fs-5"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-light fs-5"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-light fs-5"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-light fs-5"><i class="fab fa-linkedin"></i></a>
                 </div>
             </div>
             <div class="col-lg-2 col-md-4">
                 <h6 class="fw-semibold mb-3">Quick Links</h6>
                 <ul class="list-unstyled">
-                    <li class="mb-1"><a href="{{ route('home') }}" class="text-muted text-decoration-none small hover-white">Home</a></li>
-                    <li class="mb-1"><a href="{{ route('vehicles.index') }}" class="text-muted text-decoration-none small">Vehicles</a></li>
-                    <li class="mb-1"><a href="{{ route('about') }}" class="text-muted text-decoration-none small">About Us</a></li>
-                    <li class="mb-1"><a href="{{ route('contact') }}" class="text-muted text-decoration-none small">Contact</a></li>
-                    <li class="mb-1"><a href="{{ route('faq') }}" class="text-muted text-decoration-none small">FAQ</a></li>
+                    <li class="mb-1"><a href="{{ route('home') }}" class="text-light text-decoration-none small hover-white">Home</a></li>
+                    <li class="mb-1"><a href="{{ route('vehicles.index') }}" class="text-light text-decoration-none small">Vehicles</a></li>
+                    <li class="mb-1"><a href="{{ route('about') }}" class="text-light text-decoration-none small">About Us</a></li>
+                    <li class="mb-1"><a href="{{ route('contact') }}" class="text-light text-decoration-none small">Contact</a></li>
+                    <li class="mb-1"><a href="{{ route('faq') }}" class="text-light text-decoration-none small">FAQ</a></li>
                 </ul>
             </div>
             <div class="col-lg-2 col-md-4">
                 <h6 class="fw-semibold mb-3">Legal</h6>
                 <ul class="list-unstyled">
-                    <li class="mb-1"><a href="{{ route('privacy') }}" class="text-muted text-decoration-none small">Privacy Policy</a></li>
-                    <li class="mb-1"><a href="{{ route('terms') }}" class="text-muted text-decoration-none small">Terms & Conditions</a></li>
+                    <li class="mb-1"><a href="{{ route('privacy') }}" class="text-light text-decoration-none small">Privacy Policy</a></li>
+                    <li class="mb-1"><a href="{{ route('terms') }}" class="text-light text-decoration-none small">Terms & Conditions</a></li>
                 </ul>
             </div>
             <div class="col-lg-4 col-md-4">
                 <h6 class="fw-semibold mb-3">Newsletter</h6>
-                <p class="text-muted small">Subscribe to get the latest deals and offers.</p>
+                <p class="text-light small">Subscribe to get the latest deals and offers.</p>
                 <form action="{{ route('newsletter.subscribe') }}" method="POST" class="d-flex gap-2">
                     @csrf
                     <input type="email" name="email" class="form-control form-control-sm bg-secondary border-0 text-light" placeholder="Your email">
                     <button class="btn btn-primary btn-sm px-3">Subscribe</button>
                 </form>
-                <div class="mt-3 text-muted small">
+                <div class="mt-3 text-light small">
                     <p class="mb-1"><i class="fas fa-map-marker-alt me-2 text-primary"></i>123 Main Street, Dhaka, Bangladesh</p>
                     <p class="mb-1"><i class="fas fa-phone me-2 text-primary"></i>+880 1700-000000</p>
                     <p><i class="fas fa-envelope me-2 text-primary"></i>info@driveease.com</p>
@@ -189,8 +189,7 @@
         </div>
         <hr class="border-secondary mt-4">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
-            <p class="text-muted small mb-0">&copy; {{ date('Y') }} DriveEase. All rights reserved.</p>
-            <p class="text-muted small mb-0">Built with <i class="fas fa-heart text-danger"></i> using Laravel 12</p>
+            <p class="text-light small mb-0">&copy; {{ date('Y') }} DriveEase. All rights reserved.</p>
         </div>
     </div>
 </footer>

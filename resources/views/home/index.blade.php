@@ -91,19 +91,19 @@
         <div class="row g-3 text-center text-white">
             <div class="col-6 col-md-3">
                 <div class="stat-num" data-target="{{ $stats['vehicles'] }}">0</div>
-                <div class="text-muted small">Total Vehicles</div>
+                <div class="text-light small">Total Vehicles</div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-num" data-target="{{ $stats['customers'] }}">0</div>
-                <div class="text-muted small">Happy Customers</div>
+                <div class="text-light small">Happy Customers</div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-num" data-target="{{ $stats['bookings'] }}">0</div>
-                <div class="text-muted small">Completed Rentals</div>
+                <div class="text-light small">Completed Rentals</div>
             </div>
             <div class="col-6 col-md-3">
                 <div class="stat-num" data-target="{{ $stats['cities'] }}">0</div>
-                <div class="text-muted small">Cities Served</div>
+                <div class="text-light small">Cities Served</div>
             </div>
         </div>
     </div>
@@ -151,8 +151,7 @@
                 <div class="vehicle-card card shadow-sm h-100">
                     <div class="position-relative">
                         <img src="{{ vehicle_image_url($vehicle->primary_image) }}"
-                             class="card-img-top" alt="{{ $vehicle->vehicle_name }}"
-                             onerror="this.src='https://placehold.co/400x200/1e40af/fff?text={{ urlencode($vehicle->vehicle_name) }}'">
+                             class="card-img-top" alt="{{ $vehicle->vehicle_name }}">
                         <span class="vehicle-badge badge bg-success">Available</span>
                         @auth
                         @if(auth()->user()->isCustomer())
