@@ -31,6 +31,15 @@
                 @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
+                @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+                @endif
                 <h5 class="fw-bold mb-4">Send a Message</h5>
                 <form method="POST" action="{{ route('contact.submit') }}">
                     @csrf
