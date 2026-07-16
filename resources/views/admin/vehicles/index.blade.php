@@ -67,7 +67,7 @@
                     <td><span class="badge bg-light text-dark border">{{ $v->category_name }}</span></td>
                     <td class="small">{{ $v->registration_number }}</td>
                     <td class="small">{{ ucfirst($v->fuel_type) }} / {{ ucfirst($v->transmission) }}</td>
-                    <td class="fw-semibold text-primary">${{ number_format($v->price_per_day,2) }}</td>
+                    <td class="fw-semibold text-primary">TK {{ number_format($v->price_per_day,2) }}</td>
                     <td>
                         @php
                         $sc = ['available'=>'success','rented'=>'primary','maintenance'=>'warning','inactive'=>'secondary'];

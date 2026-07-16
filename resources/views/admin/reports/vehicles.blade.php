@@ -29,10 +29,10 @@
                         </div>
                     </td>
                     <td class="small">{{ $v->category_name }}</td>
-                    <td class="small">${{ number_format($v->price_per_day,2) }}</td>
+                    <td class="small">TK {{ number_format($v->price_per_day,2) }}</td>
                     <td><span class="badge bg-primary-subtle text-primary">{{ $v->total_rentals }}</span></td>
                     <td>{{ $v->completed_bookings }}</td>
-                    <td class="fw-semibold text-success">${{ number_format($v->total_revenue ?? 0,2) }}</td>
+                    <td class="fw-semibold text-success">TK {{ number_format($v->total_revenue ?? 0,2) }}</td>
                     <td>
                         <div class="d-flex gap-1 align-items-center">
                             <i class="fas fa-star text-warning" style="font-size:11px"></i>

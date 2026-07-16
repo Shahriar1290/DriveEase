@@ -27,7 +27,7 @@
                     </td>
                     <td class="small">{{ $c->phone ?? 'N/A' }}</td>
                     <td><span class="badge bg-primary-subtle text-primary">{{ $c->bookings_count }}</span></td>
-                    <td class="fw-semibold text-success">${{ number_format($c->total_spent ?? 0, 2) }}</td>
+                    <td class="fw-semibold text-success">TK {{ number_format($c->total_spent ?? 0, 2) }}</td>
                     <td class="small text-muted">{{ \Carbon\Carbon::parse($c->created_at)->format('M d, Y') }}</td>
                     <td>
                         @if($c->is_active)<span class="badge bg-success">Active</span>

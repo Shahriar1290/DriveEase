@@ -4,7 +4,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h5 class="fw-bold mb-0">Payment Management</h5>
-    <div class="badge bg-success fs-6 px-3 py-2">Total Revenue: ${{ number_format($totalRevenue,2) }}</div>
+    <div class="badge bg-success fs-6 px-3 py-2">Total Revenue: TK {{ number_format($totalRevenue,2) }}</div>
 </div>
 <div class="table-card mb-4">
     <form method="GET" class="row g-3 align-items-end">
@@ -43,7 +43,7 @@
                     <td class="small fw-semibold">{{ $p->transaction_id }}</td>
                     <td class="small">{{ $p->booking_number }}</td>
                     <td class="small">{{ $p->user_name }}</td>
-                    <td class="fw-semibold text-success">${{ number_format($p->amount,2) }}</td>
+                    <td class="fw-semibold text-success">TK {{ number_format($p->amount,2) }}</td>
                     <td class="small">{{ ucwords(str_replace('_',' ',$p->payment_method)) }}</td>
                     <td class="small text-muted">{{ $p->payment_date ? \Carbon\Carbon::parse($p->payment_date)->format('M d, Y') : 'Pending' }}</td>
                     <td>{!! payment_status_badge($p->payment_status) !!}</td>

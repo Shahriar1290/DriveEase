@@ -54,7 +54,7 @@
                     ['Color',        $vehicle->color ?? 'N/A'],
                     ['Mileage',      $vehicle->mileage ?? 'N/A'],
                     ['Engine',       $vehicle->engine_cc ?? 'N/A'],
-                    ['Price/Day',    '$'.number_format($vehicle->price_per_day,2)],
+                    ['Price/Day',    'TK '.number_format($vehicle->price_per_day,2)],
                     ['Status',       ucfirst($vehicle->status)],
                     ['Avg Rating',   $vehicle->average_rating.' ⭐'],
                     ['Total Rentals',$vehicle->total_rentals],
@@ -99,7 +99,7 @@
                             <td class="small">{{ $b->booking_number }}</td>
                             <td class="small">{{ $b->user_name }}</td>
                             <td class="small">{{ \Carbon\Carbon::parse($b->pickup_date)->format('M d') }} – {{ \Carbon\Carbon::parse($b->return_date)->format('M d, Y') }}</td>
-                            <td class="small">${{ number_format($b->final_amount,0) }}</td>
+                            <td class="small">TK {{ number_format($b->final_amount,0) }}</td>
                             <td>{!! booking_status_badge($b->booking_status) !!}</td>
                         </tr>
                         @empty
@@ -133,7 +133,7 @@
                     <div class="text-muted">{{ \Carbon\Carbon::parse($m->maintenance_date)->format('M d, Y') }}</div>
                 </div>
                 <div class="text-end">
-                    <div>${{ number_format($m->cost,0) }}</div>
+                    <div>TK {{ number_format($m->cost,0) }}</div>
                     {!! maintenance_status_badge($m->status) !!}
                 </div>
             </div>

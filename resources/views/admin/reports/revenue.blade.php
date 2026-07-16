@@ -31,7 +31,7 @@
 <div class="row g-4 mb-4">
     <div class="col-md-4">
         <div class="table-card text-center">
-            <div class="h3 fw-bold text-success">${{ number_format($total,2) }}</div>
+            <div class="h3 fw-bold text-success">TK {{ number_format($total,2) }}</div>
             <div class="text-muted">Total Revenue</div>
             <div class="text-muted small">{{ \Carbon\Carbon::parse($from)->format('M d') }} – {{ \Carbon\Carbon::parse($to)->format('M d, Y') }}</div>
         </div>
@@ -44,7 +44,7 @@
     </div>
     <div class="col-md-4">
         <div class="table-card text-center">
-            <div class="h3 fw-bold text-warning">${{ count($payments) > 0 ? number_format($total/count($payments),2) : '0.00' }}</div>
+            <div class="h3 fw-bold text-warning">TK {{ count($payments) > 0 ? number_format($total/count($payments),2) : '0.00' }}</div>
             <div class="text-muted">Avg. Transaction</div>
         </div>
     </div>
@@ -64,7 +64,7 @@
             <div class="d-flex justify-content-between align-items-center mb-2 small">
                 <span>{{ ucwords(str_replace('_',' ',$method)) }}</span>
                 <div class="text-end">
-                    <div class="fw-semibold">${{ number_format($data['total'],2) }}</div>
+                    <div class="fw-semibold">TK {{ number_format($data['total'],2) }}</div>
                     <div class="text-muted">{{ $data['count'] }} txns</div>
                 </div>
             </div>
@@ -86,7 +86,7 @@
                     <td class="small">{{ $p->user_name }}</td>
                     <td class="small">{{ $p->booking_number }}</td>
                     <td class="small">{{ ucwords(str_replace('_',' ',$p->payment_method)) }}</td>
-                    <td class="fw-semibold text-success">${{ number_format($p->amount,2) }}</td>
+                    <td class="fw-semibold text-success">TK {{ number_format($p->amount,2) }}</td>
                 </tr>
                 @endforeach
             </tbody>

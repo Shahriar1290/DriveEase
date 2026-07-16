@@ -13,7 +13,7 @@
         <div class="col-md-6"><div class="text-muted small">Receipt Number</div><div class="fw-semibold">{{ $payment->receipt_number }}</div></div>
         <div class="col-md-6"><div class="text-muted small">Booking Number</div><div class="fw-semibold">{{ $payment->booking_number }}</div></div>
         <div class="col-md-6"><div class="text-muted small">Customer</div><div class="fw-semibold">{{ $payment->user_name }}</div></div>
-        <div class="col-md-6"><div class="text-muted small">Amount</div><div class="fw-bold text-success fs-5">${{ number_format($payment->amount,2) }}</div></div>
+        <div class="col-md-6"><div class="text-muted small">Amount</div><div class="fw-bold text-success fs-5">TK {{ number_format($payment->amount,2) }}</div></div>
         <div class="col-md-6"><div class="text-muted small">Method</div><div class="fw-semibold">{{ ucwords(str_replace('_',' ',$payment->payment_method)) }}</div></div>
         <div class="col-md-6"><div class="text-muted small">Payment Date</div><div class="fw-semibold">{{ $payment->payment_date ? \Carbon\Carbon::parse($payment->payment_date)->format('M d, Y H:i') : 'N/A' }}</div></div>
         <div class="col-md-6"><div class="text-muted small">Status</div>{!! payment_status_badge($payment->payment_status) !!}</div>

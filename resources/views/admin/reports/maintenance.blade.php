@@ -14,9 +14,9 @@
     </div>
 </form>
 <div class="row g-4 mb-4">
-    <div class="col-md-4"><div class="table-card text-center"><div class="h3 fw-bold text-danger">${{ number_format($totalCost,2) }}</div><div class="text-muted">Total Maintenance Cost</div></div></div>
+    <div class="col-md-4"><div class="table-card text-center"><div class="h3 fw-bold text-danger">TK {{ number_format($totalCost,2) }}</div><div class="text-muted">Total Maintenance Cost</div></div></div>
     <div class="col-md-4"><div class="table-card text-center"><div class="h3 fw-bold text-primary">{{ count($records) }}</div><div class="text-muted">Total Records</div></div></div>
-    <div class="col-md-4"><div class="table-card text-center"><div class="h3 fw-bold text-warning">${{ count($records) > 0 ? number_format($totalCost/count($records),2) : '0.00' }}</div><div class="text-muted">Avg Cost/Record</div></div></div>
+    <div class="col-md-4"><div class="table-card text-center"><div class="h3 fw-bold text-warning">TK {{ count($records) > 0 ? number_format($totalCost/count($records),2) : '0.00' }}</div><div class="text-muted">Avg Cost/Record</div></div></div>
 </div>
 <div class="row g-4 mb-4">
     <div class="col-md-5">
@@ -25,7 +25,7 @@
             @foreach($byType as $type => $data)
             <div class="d-flex justify-content-between mb-2 small">
                 <span>{{ $type }}</span>
-                <div class="text-end"><div class="fw-semibold">${{ number_format($data['cost'],2) }}</div><div class="text-muted">{{ $data['count'] }} records</div></div>
+                <div class="text-end"><div class="fw-semibold">TK {{ number_format($data['cost'],2) }}</div><div class="text-muted">{{ $data['count'] }} records</div></div>
             </div>
             @endforeach
         </div>
@@ -42,7 +42,7 @@
                             <td class="small">{{ $r->vehicle_name }}</td>
                             <td class="small">{{ $r->maintenance_type }}</td>
                             <td class="small">{{ \Carbon\Carbon::parse($r->maintenance_date)->format('M d, Y') }}</td>
-                            <td class="small fw-semibold">${{ number_format($r->cost,2) }}</td>
+                            <td class="small fw-semibold">TK {{ number_format($r->cost,2) }}</td>
                             <td>{!! maintenance_status_badge($r->status) !!}</td>
                         </tr>
                         @endforeach

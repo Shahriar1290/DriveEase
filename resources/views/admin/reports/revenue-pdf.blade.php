@@ -21,7 +21,7 @@ tr:nth-child(even) td { background: #f9fafb; }
     <p class="meta">Generated: {{ now()->format('M d, Y H:i') }}</p>
 </div>
 
-<p><strong>Total Revenue: </strong><span class="total">${{ number_format($total,2) }}</span></p>
+<p><strong>Total Revenue: </strong><span class="total">TK {{ number_format($total,2) }}</span></p>
 <p><strong>Total Transactions: </strong>{{ count($payments) }}</p>
 
 <h3>By Payment Method</h3>
@@ -31,7 +31,7 @@ tr:nth-child(even) td { background: #f9fafb; }
     <tr>
         <td>{{ ucwords(str_replace('_',' ',$method)) }}</td>
         <td>{{ $data['count'] }}</td>
-        <td>${{ number_format($data['total'],2) }}</td>
+        <td>TK {{ number_format($data['total'],2) }}</td>
     </tr>
     @endforeach
 </table>
@@ -46,7 +46,7 @@ tr:nth-child(even) td { background: #f9fafb; }
         <td>{{ $p->user_name }}</td>
         <td>{{ $p->booking_number }}</td>
         <td>{{ ucwords(str_replace('_',' ',$p->payment_method)) }}</td>
-        <td>${{ number_format($p->amount,2) }}</td>
+        <td>TK {{ number_format($p->amount,2) }}</td>
     </tr>
     @endforeach
 </table>

@@ -55,7 +55,7 @@
                         <div class="text-muted">→ {{ \Carbon\Carbon::parse($b->return_date)->format('M d, Y') }}</div>
                     </td>
                     <td class="text-center">{{ $b->total_days }}</td>
-                    <td class="fw-semibold">${{ number_format($b->final_amount,0) }}</td>
+                    <td class="fw-semibold">TK {{ number_format($b->final_amount,0) }}</td>
                     <td>{!! booking_status_badge($b->booking_status) !!}</td>
                     <td>
                         <a href="{{ route('admin.bookings.show', $b->id) }}" class="btn btn-sm btn-light border">

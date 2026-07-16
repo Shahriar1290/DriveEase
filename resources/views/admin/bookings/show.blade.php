@@ -35,7 +35,7 @@
                             <div>
                                 <p class="mb-0 fw-semibold">{{ $booking->vehicle_name }}</p>
                                 <p class="mb-0 text-muted small">{{ $booking->registration_number }}</p>
-                                <p class="mb-0 text-muted small">${{ $booking->price_per_day }}/day</p>
+                                <p class="mb-0 text-muted small">TK {{ $booking->price_per_day }}/day</p>
                             </div>
                         </div>
                     </div>
@@ -59,16 +59,16 @@
                 </div>
                 <div class="col-md-6">
                     <div class="bg-light rounded p-3">
-                        <h6 class="fw-semibold mb-3"><i class="fas fa-dollar-sign text-primary me-2"></i>Payment</h6>
+                        <h6 class="fw-semibold mb-3"><i class="fas fa-money-bill text-primary me-2"></i>Payment</h6>
                         <div class="d-flex justify-content-between mb-1 small">
-                            <span class="text-muted">Subtotal</span><span>${{ number_format($booking->total_cost,2) }}</span>
+                            <span class="text-muted">Subtotal</span><span>TK {{ number_format($booking->total_cost,2) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-1 small">
-                            <span class="text-muted">Tax (5%)</span><span>${{ number_format($booking->tax,2) }}</span>
+                            <span class="text-muted">Tax (5%)</span><span>TK {{ number_format($booking->tax,2) }}</span>
                         </div>
                         <hr class="my-2">
                         <div class="d-flex justify-content-between fw-bold">
-                            <span>Total</span><span class="text-primary">${{ number_format($booking->final_amount,2) }}</span>
+                            <span>Total</span><span class="text-primary">TK {{ number_format($booking->final_amount,2) }}</span>
                         </div>
                         @if($payment)
                         <div class="mt-2 d-flex justify-content-between small">

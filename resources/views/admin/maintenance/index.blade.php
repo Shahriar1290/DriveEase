@@ -25,7 +25,7 @@
 </div>
 <div class="table-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <span class="text-muted small">Total maintenance cost: <strong>${{ number_format($totalCost,2) }}</strong></span>
+        <span class="text-muted small">Total maintenance cost: <strong>TK {{ number_format($totalCost,2) }}</strong></span>
     </div>
     <div class="table-responsive">
         <table class="table table-hover align-middle">
@@ -39,7 +39,7 @@
                     <td class="small">{{ $r->maintenance_type }}</td>
                     <td class="small">{{ \Carbon\Carbon::parse($r->maintenance_date)->format('M d, Y') }}</td>
                     <td class="small text-muted">{{ $r->next_maintenance_date ? \Carbon\Carbon::parse($r->next_maintenance_date)->format('M d, Y') : 'N/A' }}</td>
-                    <td class="fw-semibold">${{ number_format($r->cost,2) }}</td>
+                    <td class="fw-semibold">TK {{ number_format($r->cost,2) }}</td>
                     <td class="small">{{ $r->mechanic_name ?? 'N/A' }}</td>
                     <td>{!! maintenance_status_badge($r->status) !!}</td>
                     <td>

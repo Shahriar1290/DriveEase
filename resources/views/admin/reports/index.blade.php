@@ -5,7 +5,7 @@
 <h5 class="fw-bold mb-4">Reports & Analytics</h5>
 <div class="row g-4">
     @foreach([
-        ['title'=>'Revenue Report','icon'=>'fas fa-dollar-sign','color'=>'success','desc'=>'Monthly and daily revenue breakdown with payment method analysis.','route'=>'admin.reports.revenue'],
+        ['title'=>'Revenue Report','icon'=>'fas fa-money-bill','color'=>'success','desc'=>'Monthly and daily revenue breakdown with payment method analysis.','route'=>'admin.reports.revenue'],
         ['title'=>'Vehicle Report','icon'=>'fas fa-car','color'=>'primary','desc'=>'Most rented vehicles, utilization rates, and revenue per vehicle.','route'=>'admin.reports.vehicles'],
         ['title'=>'Customer Report','icon'=>'fas fa-users','color'=>'purple','desc'=>'Top customers, spending analysis, and activity trends.','route'=>'admin.reports.customers'],
         ['title'=>'Maintenance Report','icon'=>'fas fa-wrench','color'=>'warning','desc'=>'Maintenance costs, service history, and upcoming schedules.','route'=>'admin.reports.maintenance'],

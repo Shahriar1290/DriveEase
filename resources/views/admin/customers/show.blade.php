@@ -14,7 +14,7 @@
             <div class="row g-2 text-center mb-3">
                 <div class="col-4"><div class="fw-bold fs-5 text-primary">{{ $stats['total_bookings'] }}</div><div class="text-muted small">Bookings</div></div>
                 <div class="col-4"><div class="fw-bold fs-5 text-success">{{ $stats['completed_bookings'] }}</div><div class="text-muted small">Completed</div></div>
-                <div class="col-4"><div class="fw-bold fs-5 text-warning">${{ number_format($stats['total_spent'],0) }}</div><div class="text-muted small">Spent</div></div>
+                <div class="col-4"><div class="fw-bold fs-5 text-warning">TK {{ number_format($stats['total_spent'],0) }}</div><div class="text-muted small">Spent</div></div>
             </div>
             <div class="text-start small">
                 <div class="mb-1"><i class="fas fa-phone text-muted me-2"></i>{{ $customer->phone ?? 'N/A' }}</div>
@@ -35,7 +35,7 @@
                             <td class="small fw-semibold">{{ $b->booking_number }}</td>
                             <td class="small">{{ $b->vehicle_name }}</td>
                             <td class="small">{{ \Carbon\Carbon::parse($b->pickup_date)->format('M d') }} → {{ \Carbon\Carbon::parse($b->return_date)->format('M d, Y') }}</td>
-                            <td class="small">${{ number_format($b->final_amount,0) }}</td>
+                            <td class="small">TK {{ number_format($b->final_amount,0) }}</td>
                             <td>{!! booking_status_badge($b->booking_status) !!}</td>
                         </tr>
                         @empty<tr><td colspan="5" class="text-center text-muted">No bookings yet.</td></tr>

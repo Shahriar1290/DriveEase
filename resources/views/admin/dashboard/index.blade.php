@@ -16,7 +16,7 @@
         ['label'=>'Pending Bookings', 'value'=>$stats['pending_bookings'],   'icon'=>'fas fa-clock',         'color'=>'#ef4444','bg'=>'#fef2f2'],
         ['label'=>'Active Rentals',   'value'=>$stats['active_bookings'],    'icon'=>'fas fa-car-side',      'color'=>'#06b6d4','bg'=>'#ecfeff'],
         ['label'=>'Completed',        'value'=>$stats['completed_bookings'], 'icon'=>'fas fa-flag-checkered','color'=>'#10b981','bg'=>'#ecfdf5'],
-        ['label'=>'Monthly Revenue',  'value'=>'$'.number_format($stats['monthly_revenue'],0),'icon'=>'fas fa-dollar-sign','color'=>'#6366f1','bg'=>'#eef2ff'],
+        ['label'=>'Monthly Revenue',  'value'=>'TK '.number_format($stats['monthly_revenue'],0),'icon'=>'fas fa-taka-sign','color'=>'#6366f1','bg'=>'#eef2ff'],
     ];
     @endphp
     @foreach($cards as $card)
@@ -42,7 +42,7 @@
         <div class="table-card">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h6 class="fw-bold mb-0">Monthly Revenue (Last 12 Months)</h6>
-                <span class="badge bg-primary">Total: ${{ number_format($stats['total_revenue'],0) }}</span>
+                <span class="badge bg-primary">Total: TK {{ number_format($stats['total_revenue'],0) }}</span>
             </div>
             <canvas id="revenueChart" height="100"></canvas>
         </div>
@@ -90,7 +90,7 @@
                             <td class="fw-semibold small">{{ $b->booking_number }}</td>
                             <td class="small">{{ $b->user_name }}</td>
                             <td class="small">{{ $b->vehicle_name }}</td>
-                            <td class="small fw-semibold">${{ number_format($b->final_amount,0) }}</td>
+                            <td class="small fw-semibold">TK {{ number_format($b->final_amount,0) }}</td>
                             <td>{!! booking_status_badge($b->booking_status) !!}</td>
                             <td><a href="{{ route('admin.bookings.show', $b->id) }}" class="btn btn-xs btn-light border btn-sm py-0 px-2"><i class="fas fa-eye"></i></a></td>
                         </tr>
@@ -114,7 +114,7 @@
                      onerror="this.src='https://placehold.co/48x40/1e40af/fff?text=V'">
                 <div class="flex-grow-1 overflow-hidden">
                     <div class="fw-semibold small text-truncate">{{ $v->vehicle_name }}</div>
-                    <div class="text-muted" style="font-size:11px">{{ $v->total_rentals }} rentals · ${{ number_format($v->price_per_day) }}/day</div>
+                    <div class="text-muted" style="font-size:11px">{{ $v->total_rentals }} rentals · TK {{ number_format($v->price_per_day) }}/day</div>
                 </div>
                 <span class="badge bg-primary-subtle text-primary">{{ $v->total_rentals }}</span>
             </div>
@@ -159,7 +159,7 @@
                 <div>
                     <div class="fw-semibold small">{{ $m->vehicle_name }}</div>
                     <div class="text-muted" style="font-size:11px">{{ $m->maintenance_type }} · {{ \Carbon\Carbon::parse($m->maintenance_date)->format('M d, Y') }}</div>
-                    <div class="text-muted" style="font-size:11px">Est. cost: ${{ number_format($m->cost,0) }}</div>
+                    <div class="text-muted" style="font-size:11px">Est. cost: TK {{ number_format($m->cost,0) }}</div>
                 </div>
             </div>
             @empty
@@ -180,7 +180,7 @@ new Chart(document.getElementById('revenueChart'), {
     data: {
         labels: chartLabels,
         datasets: [{
-            label: 'Revenue ($)',
+            label: 'Revenue (TK)',
             data: chartValues,
             backgroundColor: 'rgba(14,165,233,.15)',
             borderColor: '#0ea5e9',
