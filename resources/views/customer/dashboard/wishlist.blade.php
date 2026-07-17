@@ -47,7 +47,7 @@
                     </div>
                     <div class="mt-auto d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="fw-bold text-primary">${{ number_format($w->price_per_day) }}</span>
+                            <span class="fw-bold text-primary">TK {{ number_format($w->price_per_day) }}</span>
                             <span class="text-muted small">/day</span>
                         </div>
                         <a href="{{ route('vehicles.show', $w->slug) }}" class="btn btn-primary btn-sm">

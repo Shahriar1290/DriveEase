@@ -79,7 +79,7 @@
                 </div>
                 <div class="col-6 col-md-3 text-center">
                     <div class="text-muted small">Daily Rate</div>
-                    <div class="fw-semibold">${{ number_format($booking->price_per_day,2) }}</div>
+                    <div class="fw-semibold">TK {{ number_format($booking->price_per_day,2) }}</div>
                 </div>
             </div>
         </div>
@@ -101,24 +101,24 @@
                         <div class="text-muted small">{{ \Carbon\Carbon::parse($booking->pickup_date)->format('M d') }} to {{ \Carbon\Carbon::parse($booking->return_date)->format('M d, Y') }}</div>
                     </td>
                     <td class="border-0 py-3 text-center">{{ $booking->total_days }} days</td>
-                    <td class="border-0 py-3 text-end">${{ number_format($booking->price_per_day,2) }}</td>
-                    <td class="border-0 py-3 text-end">${{ number_format($booking->total_cost,2) }}</td>
+                    <td class="border-0 py-3 text-end">TK {{ number_format($booking->price_per_day,2) }}</td>
+                    <td class="border-0 py-3 text-end">TK {{ number_format($booking->total_cost,2) }}</td>
                 </tr>
                 @if($booking->discount > 0)
                 <tr>
                     <td colspan="3" class="border-0 text-end text-muted">Discount</td>
-                    <td class="border-0 text-end text-success">-${{ number_format($booking->discount,2) }}</td>
+                    <td class="border-0 text-end text-success">-TK {{ number_format($booking->discount,2) }}</td>
                 </tr>
                 @endif
                 <tr>
                     <td colspan="3" class="border-0 text-end text-muted">Tax (5%)</td>
-                    <td class="border-0 text-end">${{ number_format($booking->tax,2) }}</td>
+                    <td class="border-0 text-end">TK {{ number_format($booking->tax,2) }}</td>
                 </tr>
             </tbody>
             <tfoot style="background:#f8fafc">
                 <tr>
                     <td colspan="3" class="fw-bold py-3 text-end border-0">Total Amount</td>
-                    <td class="fw-bold py-3 text-end text-primary border-0 fs-5">${{ number_format($booking->final_amount,2) }}</td>
+                    <td class="fw-bold py-3 text-end text-primary border-0 fs-5">TK {{ number_format($booking->final_amount,2) }}</td>
                 </tr>
             </tfoot>
         </table>

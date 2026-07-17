@@ -66,21 +66,21 @@
             <div class="bg-light rounded-3 p-3 h-100">
                 <h6 class="fw-semibold mb-3 small text-muted text-uppercase">Payment Summary</h6>
                 <div class="d-flex justify-content-between mb-2 small">
-                    <span class="text-muted">${{ number_format($booking->price_per_day,2) }} × {{ $booking->total_days }} days</span>
-                    <span>${{ number_format($booking->total_cost,2) }}</span>
+                    <span class="text-muted">TK {{ number_format($booking->price_per_day,2) }} × {{ $booking->total_days }} days</span>
+                    <span>TK {{ number_format($booking->total_cost,2) }}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2 small">
                     <span class="text-muted">Discount</span>
-                    <span class="text-success">-${{ number_format($booking->discount,2) }}</span>
+                    <span class="text-success">-TK {{ number_format($booking->discount,2) }}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-2 small">
                     <span class="text-muted">Tax (5%)</span>
-                    <span>${{ number_format($booking->tax,2) }}</span>
+                    <span>TK {{ number_format($booking->tax,2) }}</span>
                 </div>
                 <hr class="my-2">
                 <div class="d-flex justify-content-between fw-bold">
                     <span>Total</span>
-                    <span class="text-primary fs-6">${{ number_format($booking->final_amount,2) }}</span>
+                    <span class="text-primary fs-6">TK {{ number_format($booking->final_amount,2) }}</span>
                 </div>
                 @if($payment)
                 <hr class="my-2">

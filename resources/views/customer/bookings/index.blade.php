@@ -34,7 +34,7 @@
                 <div class="d-flex gap-3 text-muted small flex-wrap">
                     <span><i class="fas fa-calendar-alt me-1 text-primary"></i>{{ \Carbon\Carbon::parse($b->pickup_date)->format('M d, Y') }} → {{ \Carbon\Carbon::parse($b->return_date)->format('M d, Y') }}</span>
                     <span><i class="fas fa-clock me-1 text-primary"></i>{{ $b->total_days }} days</span>
-                    <span><i class="fas fa-dollar-sign me-1 text-primary"></i>${{ number_format($b->final_amount, 2) }}</span>
+                    <span><i class="fas fa-money-bill me-1 text-primary"></i>TK {{ number_format($b->final_amount, 2) }}</span>
                     @if($b->payment_method)
                     <span><i class="fas fa-credit-card me-1 text-primary"></i>{{ ucwords(str_replace('_',' ',$b->payment_method)) }}</span>
                     @endif

@@ -49,9 +49,6 @@
                         <a href="{{ route('register') }}" class="text-primary small fw-semibold">Create Account</a>
                     </div>
                     <hr class="my-3">
-                    <div class="text-center">
-                        <small class="text-muted">Demo: <code>admin@vrms.com</code> / <code>password</code></small>
-                    </div>
                 </div>
             </div>
         </div>

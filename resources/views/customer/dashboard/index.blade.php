@@ -48,7 +48,7 @@
             </div>
         </div>
         <div class="text-end">
-            <div class="fw-semibold small">${{ number_format($b->final_amount, 0) }}</div>
+            <div class="fw-semibold small">TK {{ number_format($b->final_amount, 0) }}</div>
             {!! booking_status_badge($b->booking_status) !!}
         </div>
         <a href="{{ route('customer.bookings.show', $b->id) }}" class="btn btn-sm btn-light border">

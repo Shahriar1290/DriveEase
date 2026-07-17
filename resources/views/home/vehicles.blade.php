@@ -10,6 +10,11 @@
 .vehicle-grid-card .card-img-top { height:190px; object-fit:cover; }
 .compare-checkbox { position:absolute; bottom:.75rem; left:.75rem; background:rgba(255,255,255,.95); border-radius:.375rem; padding:.2rem .4rem; }
 .price-range-display { color:#0ea5e9; font-weight:700; font-size:.95rem; }
+.carousel-control-prev, .carousel-control-next,
+.carousel-control-prev-icon, .carousel-control-next-icon,
+.carousel-indicators { display:none !important; }
+.swiper-button-next, .swiper-button-prev { display:none !important; }
+nav svg { width:1.25rem; height:1.25rem; }
 </style>
 @endpush
 
@@ -85,9 +90,9 @@
                     <div class="mb-4">
                         <p class="filter-title mb-2">Price Per Day</p>
                         <div class="d-flex justify-content-between mb-1">
-                            <small class="text-muted">$0</small>
+                            <small class="text-muted">TK 0</small>
                             <span class="price-range-display small" id="priceDisplay">
-                                ${{ request('max_price', $maxPrice) }}
+                                TK {{ request('max_price', $maxPrice) }}
                             </span>
                         </div>
                         <input type="range" class="form-range" name="max_price" id="priceRange"
@@ -169,7 +174,7 @@
                             </div>
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 <div>
-                                    <span class="fw-bold text-primary fs-5">${{ number_format($vehicle->price_per_day) }}</span>
+                                    <span class="fw-bold text-primary fs-5">TK {{ number_format($vehicle->price_per_day) }}</span>
                                     <span class="text-muted small">/day</span>
                                 </div>
                                 <a href="{{ route('vehicles.show', $vehicle->slug) }}" class="btn btn-primary btn-sm">View Details</a>
@@ -180,7 +185,7 @@
                 @endforeach
             </div>
 
-            <div class="mt-4">{{ $vehicles->links() }}</div>
+            <div class="mt-4">{{ $vehicles->links('pagination::bootstrap-5') }}</div>
             @endif
         </div>
     </div>

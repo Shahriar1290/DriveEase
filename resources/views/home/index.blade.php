@@ -181,7 +181,7 @@
                         </div>
                         <div class="mt-auto d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="h5 fw-bold text-primary mb-0">${{ number_format($vehicle->price_per_day) }}</span>
+                                <span class="h5 fw-bold text-primary mb-0">TK {{ number_format($vehicle->price_per_day) }}</span>
                                 <span class="text-muted small">/day</span>
                             </div>
                             <a href="{{ route('vehicles.show', $vehicle->slug) }}" class="btn btn-primary btn-sm px-3">Book Now</a>
@@ -204,7 +204,7 @@
         <div class="row g-4">
             @foreach([
                 ['icon'=>'fas fa-shield-alt','title'=>'Fully Insured','text'=>'All our vehicles come with comprehensive insurance coverage for your peace of mind.'],
-                ['icon'=>'fas fa-dollar-sign','title'=>'Best Prices','text'=>'We offer competitive rates with no hidden charges. What you see is what you pay.'],
+                ['icon'=>'fas fa-money-bill','title'=>'Best Prices','text'=>'We offer competitive rates with no hidden charges. What you see is what you pay.'],
                 ['icon'=>'fas fa-headset','title'=>'24/7 Support','text'=>'Our dedicated team is available round the clock to assist you with any queries.'],
                 ['icon'=>'fas fa-car','title'=>'Wide Selection','text'=>'From economy to luxury, we have vehicles for every budget and occasion.'],
                 ['icon'=>'fas fa-map-marker-alt','title'=>'Multiple Locations','text'=>'Convenient pickup and drop-off locations across 25 cities.'],
