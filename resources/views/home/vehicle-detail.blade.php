@@ -60,7 +60,7 @@
                     <p class="text-muted mb-0">{{ $vehicle->brand }} {{ $vehicle->model }} · {{ $vehicle->year }}</p>
                 </div>
                 <div class="text-end">
-                    <div class="h3 fw-bold text-primary mb-0">${{ number_format($vehicle->price_per_day) }}</div>
+                    <div class="h3 fw-bold text-primary mb-0">TK {{ number_format($vehicle->price_per_day) }}</div>
                     <small class="text-muted">per day</small>
                 </div>
             </div>
@@ -120,9 +120,9 @@
                     <div class="mt-4">
                         <h6 class="fw-semibold mb-2 text-muted small text-uppercase">Pricing Breakdown</h6>
                         <table class="table table-sm table-borderless">
-                            <tr><td class="text-muted">Daily Rate</td><td class="fw-bold">${{ number_format($vehicle->price_per_day,2) }}</td></tr>
-                            <tr><td class="text-muted">Weekly (x7)</td><td class="fw-bold">${{ number_format($vehicle->price_per_day*7,2) }}</td></tr>
-                            <tr><td class="text-muted">Monthly (x30)</td><td class="fw-bold">${{ number_format($vehicle->price_per_day*30,2) }}</td></tr>
+                            <tr><td class="text-muted">Daily Rate</td><td class="fw-bold">TK {{ number_format($vehicle->price_per_day,2) }}</td></tr>
+                            <tr><td class="text-muted">Weekly (x7)</td><td class="fw-bold">TK {{ number_format($vehicle->price_per_day*7,2) }}</td></tr>
+                            <tr><td class="text-muted">Monthly (x30)</td><td class="fw-bold">TK {{ number_format($vehicle->price_per_day*30,2) }}</td></tr>
                             <tr><td class="text-muted">Tax (5%)</td><td class="fw-bold">Included</td></tr>
                         </table>
                     </div>
@@ -192,7 +192,7 @@
                         </div>
                         <div class="d-flex justify-content-between small mb-1">
                             <span class="text-muted">Rate</span>
-                            <span>${{ number_format($vehicle->price_per_day,2) }}/day</span>
+                            <span>TK {{ number_format($vehicle->price_per_day,2) }}/day</span>
                         </div>
                         <div class="d-flex justify-content-between small mb-1">
                             <span class="text-muted">Subtotal</span>
@@ -211,7 +211,14 @@
 
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Pickup Location</label>
-                        <input type="text" name="pickup_location" class="form-control" placeholder="e.g. Airport Terminal 1">
+                        <div class="input-group">
+                            <input type="text" name="pickup_location" id="pickup_location" class="form-control" placeholder="e.g. Airport Terminal 1">
+                            <button type="button" class="btn btn-outline-primary" id="useMyLocation"
+                                    title="Use my current location">
+                                <i class="fas fa-location-crosshairs"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted" id="locationStatus"></small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Payment Method <span class="text-danger">*</span></label>
@@ -272,7 +279,7 @@
                              onerror="this.src='https://placehold.co/300x140/1e40af/fff?text={{ urlencode($v->vehicle_name) }}'">
                         <div class="card-body p-3">
                             <h6 class="fw-bold mb-1 text-dark">{{ $v->vehicle_name }}</h6>
-                            <span class="text-primary fw-bold">${{ number_format($v->price_per_day) }}/day</span>
+                            <span class="text-primary fw-bold">TK {{ number_format($v->price_per_day) }}/day</span>
                         </div>
                     </div>
                 </a>
@@ -367,6 +374,50 @@ document.getElementById('starRating')?.addEventListener('mouseleave', () => {
         st.classList.toggle('text-warning', i < val);
         st.classList.toggle('text-muted', i >= val);
     });
+});
+
+document.getElementById('useMyLocation').addEventListener('click', function () {
+    const status = document.getElementById('locationStatus');
+    const input = document.getElementById('pickup_location');
+    const btn = this;
+    if (!navigator.geolocation) {
+        status.textContent = 'Geolocation is not supported by your browser.';
+        status.className = 'text-danger small';
+        return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    status.textContent = 'Detecting location...';
+    status.className = 'text-muted small';
+    navigator.geolocation.getCurrentPosition(
+        function (pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    input.value = data.display_name || (lat + ', ' + lng);
+                    status.textContent = 'Location detected!';
+                    status.className = 'text-success small';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-crosshairs"></i>';
+                })
+                .catch(function () {
+                    input.value = lat + ', ' + lng;
+                    status.textContent = 'Coordinates set (address lookup failed).';
+                    status.className = 'text-warning small';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-crosshairs"></i>';
+                });
+        },
+        function (err) {
+            status.textContent = err.code === 1 ? 'Location access denied.' : 'Unable to detect location.';
+            status.className = 'text-danger small';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-location-crosshairs"></i>';
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
 });
 </script>
 @endpush

@@ -25,7 +25,7 @@
             </p>
         </div>
         <div class="ms-auto text-end">
-            <div class="h5 fw-bold text-primary">${{ number_format($vehicle->price_per_day,2) }}</div>
+            <div class="h5 fw-bold text-primary">TK {{ number_format($vehicle->price_per_day,2) }}</div>
             <small class="text-muted">per day</small>
         </div>
     </div>
@@ -58,7 +58,7 @@
                     <h6 class="fw-semibold mb-3">Booking Summary</h6>
                     <div class="row g-2 small">
                         <div class="col-6"><span class="text-muted">Duration</span><br><strong id="daysCount"></strong></div>
-                        <div class="col-6"><span class="text-muted">Daily Rate</span><br><strong>${{ number_format($vehicle->price_per_day,2) }}</strong></div>
+                        <div class="col-6"><span class="text-muted">Daily Rate</span><br><strong>TK {{ number_format($vehicle->price_per_day,2) }}</strong></div>
                         <div class="col-6"><span class="text-muted">Subtotal</span><br><strong id="subtotal"></strong></div>
                         <div class="col-6"><span class="text-muted">Tax (5%)</span><br><strong id="taxAmt"></strong></div>
                     </div>
@@ -71,8 +71,15 @@
 
             <div class="col-md-6">
                 <label class="form-label fw-semibold small">Pickup Location</label>
-                <input type="text" name="pickup_location" class="form-control"
-                       placeholder="e.g. Dhaka Airport" value="{{ old('pickup_location') }}">
+                <div class="input-group">
+                    <input type="text" name="pickup_location" id="pickup_location" class="form-control"
+                           placeholder="e.g. Dhaka Airport" value="{{ old('pickup_location') }}">
+                    <button type="button" class="btn btn-outline-primary" id="useMyLocation"
+                            title="Use my current location">
+                        <i class="fas fa-location-crosshairs"></i>
+                    </button>
+                </div>
+                <small class="text-muted" id="locationStatus"></small>
             </div>
             <div class="col-md-6">
                 <label class="form-label fw-semibold small">Return Location</label>
@@ -134,5 +141,49 @@ function calcCost() {
 }
 document.getElementById('pickupDate').addEventListener('change', calcCost);
 document.getElementById('returnDate').addEventListener('change', calcCost);
+
+document.getElementById('useMyLocation').addEventListener('click', function () {
+    const status = document.getElementById('locationStatus');
+    const input = document.getElementById('pickup_location');
+    const btn = this;
+    if (!navigator.geolocation) {
+        status.textContent = 'Geolocation is not supported by your browser.';
+        status.className = 'text-danger small';
+        return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    status.textContent = 'Detecting location...';
+    status.className = 'text-muted small';
+    navigator.geolocation.getCurrentPosition(
+        function (pos) {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=' + lat + '&lon=' + lng)
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    input.value = data.display_name || (lat + ', ' + lng);
+                    status.textContent = 'Location detected!';
+                    status.className = 'text-success small';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-crosshairs"></i>';
+                })
+                .catch(function () {
+                    input.value = lat + ', ' + lng;
+                    status.textContent = 'Coordinates set (address lookup failed).';
+                    status.className = 'text-warning small';
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-location-crosshairs"></i>';
+                });
+        },
+        function (err) {
+            status.textContent = err.code === 1 ? 'Location access denied.' : 'Unable to detect location.';
+            status.className = 'text-danger small';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-location-crosshairs"></i>';
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+});
 </script>
 @endpush
