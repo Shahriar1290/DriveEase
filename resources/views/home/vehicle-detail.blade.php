@@ -346,9 +346,9 @@ function calcCost() {
     const tax = sub * 0.05;
     const total = sub + tax;
     document.getElementById('daysCount').textContent = days + ' day(s)';
-    document.getElementById('subtotal').textContent = '$' + sub.toFixed(2);
-    document.getElementById('taxAmt').textContent = '$' + tax.toFixed(2);
-    document.getElementById('totalAmt').textContent = '$' + total.toFixed(2);
+    document.getElementById('subtotal').textContent = 'TK ' + sub.toFixed(2);
+    document.getElementById('taxAmt').textContent = 'TK ' + tax.toFixed(2);
+    document.getElementById('totalAmt').textContent = 'TK ' + total.toFixed(2);
     document.getElementById('costPreview').classList.remove('d-none');
 }
 document.getElementById('pickupDate')?.addEventListener('change', calcCost);

@@ -199,7 +199,7 @@ const priceRange = document.getElementById('priceRange');
 const priceDisplay = document.getElementById('priceDisplay');
 if (priceRange) {
     priceRange.addEventListener('input', () => {
-        priceDisplay.textContent = '$' + priceRange.value;
+        priceDisplay.textContent = 'TK ' + priceRange.value;
     });
 }
 
