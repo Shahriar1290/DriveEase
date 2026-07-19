@@ -22,11 +22,8 @@ use App\Http\Controllers\Customer\ReviewController as CustomerReview;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CustomerMiddleware;
 
-/*
-|--------------------------------------------------------------------------
-| Public Routes
-|--------------------------------------------------------------------------
-*/
+
+// | Public Routes
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/about', [HomeController::class, 'about'])->name('about');
@@ -38,9 +35,7 @@ Route::get('/terms', [HomeController::class, 'terms'])->name('terms');
 Route::post('/newsletter', [HomeController::class, 'newsletter'])->name('newsletter.subscribe');
 
 /*
-|--------------------------------------------------------------------------
-| Vehicle Routes (Public)
-|--------------------------------------------------------------------------
+ Vehicle Routes (Public)
 */
 
 Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
@@ -48,11 +43,7 @@ Route::get('/vehicles/compare', [VehicleController::class, 'compare'])->name('ve
 Route::get('/vehicles/search', [VehicleController::class, 'search'])->name('vehicles.search');
 Route::get('/vehicles/{slug}', [VehicleController::class, 'show'])->name('vehicles.show');
 
-/*
-|--------------------------------------------------------------------------
-| Auth Routes
-|--------------------------------------------------------------------------
-*/
+// Auth Routes
 
 Route::get('/login', [LoginController::class, 'showForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -61,11 +52,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [RegisterController::class, 'showForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
-/*
-|--------------------------------------------------------------------------
-| Customer Routes (Protected)
-|--------------------------------------------------------------------------
-*/
+// Customer Routes (Protected)
 
 Route::middleware(['auth', CustomerMiddleware::class])->prefix('customer')->name('customer.')->group(function () {
 
@@ -86,19 +73,14 @@ Route::middleware(['auth', CustomerMiddleware::class])->prefix('customer')->name
 
     // Profile
     Route::get('/profile', [CustomerProfile::class, 'edit'])->name('profile');
-    Route::post('/profile', [CustomerProfile::class, 'update'])->name('profile.update');
+    Route::match(['post', 'put'], '/profile', [CustomerProfile::class, 'update'])->name('profile.update');
     Route::post('/password', [CustomerProfile::class, 'changePassword'])->name('password.update');
 
     // Reviews
     Route::post('/reviews', [CustomerReview::class, 'store'])->name('reviews.store');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Admin Routes (Protected)
-|--------------------------------------------------------------------------
-*/
-
+// Admin Routes (Protected)
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
 
     // Dashboard
