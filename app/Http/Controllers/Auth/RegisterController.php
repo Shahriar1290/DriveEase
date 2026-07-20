@@ -41,10 +41,6 @@ class RegisterController extends Controller
             Hash::make($request->password),
         ]);
         $userId = DB::getPdo()->lastInsertId();
-
-        // Laravel's Auth::login() requires an Eloquent User instance —
-        // we fetch the freshly inserted row back into the minimal User model
-        // (this is the only place Eloquent is touched, purely for session auth).
         $user = User::find($userId);
         Auth::login($user);
 

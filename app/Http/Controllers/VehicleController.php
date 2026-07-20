@@ -187,10 +187,6 @@ class VehicleController extends Controller
         return response()->json($results);
     }
 
-    /**
-     * Build a minimal LengthAwarePaginator-compatible object from raw rows,
-     * so existing Blade views ($vehicles->links(), ->total(), etc.) keep working.
-     */
     private function makePaginator(array $items, int $total, int $perPage, int $page, Request $request)
     {
         return new \Illuminate\Pagination\LengthAwarePaginator(

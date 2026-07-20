@@ -35,10 +35,6 @@ class LoginController extends Controller
         if (!$userRow->is_active) {
             return back()->with('error', 'Your account has been deactivated. Please contact support.');
         }
-
-        // Laravel's session guard requires an Eloquent Authenticatable instance.
-        // We hydrate the minimal User model from the raw row we already fetched
-        // (no second query) purely so Auth::login() can store it in the session.
         $user = new User();
         $user->forceFill((array) $userRow);
         $user->exists = true;
