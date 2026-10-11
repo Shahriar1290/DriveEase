@@ -217,11 +217,14 @@
                             </div>
 
                             @auth @if(auth()->user()->isCustomer())
-                            <form action="{{ route('customer.wishlist.toggle') }}" method="POST" class="d-inline">
+                            @php $saved = in_array((int) $vehicle->id, $wishlistIds ?? [], true); @endphp
+                            <form action="{{ route('customer.wishlist.toggle') }}" method="POST" class="d-inline" data-wishlist>
                                 @csrf
                                 <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
-                                <button type="submit" class="wishlist-btn-corner" title="Save to wishlist">
-                                    <i class="fas fa-heart text-muted"></i>
+                                <button type="submit" class="wishlist-btn-corner {{ $saved ? 'active' : '' }}"
+                                        title="{{ $saved ? 'Remove from wishlist' : 'Save to wishlist' }}"
+                                        aria-label="Toggle wishlist" aria-pressed="{{ $saved ? 'true' : 'false' }}">
+                                    <i class="fas fa-heart"></i>
                                 </button>
                             </form>
                             @endif @endauth

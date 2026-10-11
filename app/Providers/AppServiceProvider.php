@@ -6,6 +6,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\View\Composers\NotificationComposer;
+use App\View\Composers\WishlistComposer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,5 +25,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Paginator::defaultView('pagination::bootstrap-5');
         View::composer(['layouts.*'], NotificationComposer::class);
+        View::composer(['home.index', 'home.vehicles', 'home.vehicle-detail'], WishlistComposer::class);
     }
 }
