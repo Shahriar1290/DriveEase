@@ -2,12 +2,7 @@
 @extends('layouts.app')
 @section('title','Contact Us — DriveEase')
 @section('content')
-<div class="bg-dark text-white py-5">
-    <div class="container text-center">
-        <h1 class="fw-bold mb-2">Contact Us</h1>
-        <p class="text-white-50 mb-0">We'd love to hear from you. Send us a message!</p>
-    </div>
-</div>
+@include('partials.page-hero', ['title' => 'Contact Us', 'subtitle' => "We'd love to hear from you. Send us a message and we'll get back within one business day.", 'crumb' => 'Contact'])
 <div class="container py-5">
     <div class="row g-5">
         <div class="col-lg-4">

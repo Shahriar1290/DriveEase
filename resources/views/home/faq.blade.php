@@ -1,12 +1,7 @@
 @extends('layouts.app')
 @section('title','FAQ — DriveEase')
 @section('content')
-<div class="bg-dark text-white py-5">
-    <div class="container text-center">
-        <h1 class="fw-bold mb-2">Frequently Asked Questions</h1>
-        <p class="text-white-50">Everything you need to know about renting with DriveEase</p>
-    </div>
-</div>
+@include('partials.page-hero', ['title' => 'Frequently Asked Questions', 'subtitle' => 'Everything you need to know about renting with DriveEase', 'crumb' => 'FAQ'])
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8">

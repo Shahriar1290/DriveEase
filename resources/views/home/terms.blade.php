@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title','Terms & Conditions — DriveEase')
 @section('content')
-<div class="bg-dark text-white py-5"><div class="container text-center"><h1 class="fw-bold">Terms & Conditions</h1><p class="text-white-50">Last updated: January 1, 2024</p></div></div>
+@include('partials.page-hero', ['title' => 'Terms & Conditions', 'subtitle' => 'Last updated: January 1, 2024'])
 <div class="container py-5"><div class="row justify-content-center"><div class="col-lg-8">
     <h4 class="fw-bold mb-3">1. Acceptance of Terms</h4>
     <p class="text-muted">By using DriveEase, you agree to these Terms and Conditions. If you do not agree, please do not use our services.</p>

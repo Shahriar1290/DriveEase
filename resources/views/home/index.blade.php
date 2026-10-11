@@ -153,7 +153,7 @@
         </div>
         <div class="row g-4">
             @foreach($categories as $cat)
-            <div class="col-6 col-md-4 col-lg-3">
+            <div class="col-6 col-md-4 col-lg-3" data-reveal data-reveal-delay="{{ $loop->index * 60 }}">
                 <a href="{{ route('vehicles.index', ['category' => $cat->id]) }}" class="category-card text-decoration-none">
                     <div class="category-icon-wrap">
                         <i class="{{ $cat->icon ?? 'fas fa-car' }}"></i>
@@ -161,6 +161,29 @@
                     <h6 class="fw-bold mb-1 text-dark">{{ $cat->category_name }}</h6>
                     <small class="text-muted fw-medium">{{ $cat->available_count }} Available</small>
                 </a>
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+{{-- How It Works --}}
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container py-3">
+        <div class="text-center mb-5">
+            <span class="glass-pill text-primary mb-2">How It Works</span>
+            <h2 class="fw-bold mt-2">On the Road in Three Simple Steps</h2>
+        </div>
+        <div class="row g-5">
+            @foreach([
+                ['icon'=>'fa-magnifying-glass','title'=>'Choose Your Vehicle','text'=>'Browse the fleet, filter by category or budget, and compare up to four cars side by side.'],
+                ['icon'=>'fa-calendar-check','title'=>'Pick Your Dates','text'=>'Select pickup and return dates. The total, including tax, is calculated instantly.'],
+                ['icon'=>'fa-key','title'=>'Collect & Drive','text'=>'Once approved, pick up your keys at your chosen hub and enjoy the journey.'],
+            ] as $i => $step)
+            <div class="col-md-4 step-card" data-reveal data-reveal-delay="{{ $i * 120 }}">
+                <div class="step-number">{{ $i + 1 }}</div>
+                <h5 class="fw-bold mb-2"><i class="fas {{ $step['icon'] }} text-primary me-2"></i>{{ $step['title'] }}</h5>
+                <p class="text-muted small mb-0 mx-auto" style="max-width: 300px;">{{ $step['text'] }}</p>
             </div>
             @endforeach
         </div>
@@ -181,7 +204,7 @@
         </div>
         <div class="row g-4">
             @foreach($featuredVehicles->take(8) as $vehicle)
-            <div class="col-sm-6 col-lg-3">
+            <div class="col-sm-6 col-lg-3" data-reveal data-reveal-delay="{{ ($loop->index % 4) * 80 }}">
                 <div class="vehicle-card">
                     <div class="vehicle-card-img-wrap">
                         <img src="{{ vehicle_image_url($vehicle->primary_image) }}"
@@ -193,10 +216,13 @@
                         </div>
                         @auth
                         @if(auth()->user()->isCustomer())
-                        <form action="{{ route('customer.wishlist.toggle') }}" method="POST" class="d-inline">
+                        @php $saved = in_array((int) $vehicle->id, $wishlistIds ?? [], true); @endphp
+                        <form action="{{ route('customer.wishlist.toggle') }}" method="POST" class="d-inline" data-wishlist>
                             @csrf
                             <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
-                            <button type="submit" class="wishlist-btn" title="Add to Wishlist">
+                            <button type="submit" class="wishlist-btn {{ $saved ? 'active' : '' }}"
+                                    title="{{ $saved ? 'Remove from wishlist' : 'Save to wishlist' }}"
+                                    aria-label="Toggle wishlist" aria-pressed="{{ $saved ? 'true' : 'false' }}">
                                 <i class="fas fa-heart"></i>
                             </button>
                         </form>
@@ -262,7 +288,7 @@
                 ['icon'=>'fas fa-map-location-dot','title'=>'Flexible Hub Pickup','text'=>'Convenient airport drop-offs and city hubs for effortless pick and return.'],
                 ['icon'=>'fas fa-mobile-screen','title'=>'100% Digital Rental Process','text'=>'Verify credentials and confirm your booking in under 2 minutes directly from your phone.'],
             ] as $item)
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-4" data-reveal data-reveal-delay="{{ ($loop->index % 3) * 80 }}">
                 <div class="feature-box">
                     <div class="feature-icon-wrap">
                         <i class="{{ $item['icon'] }}"></i>
@@ -286,7 +312,7 @@
         </div>
         <div class="row g-4">
             @foreach($testimonials->take(3) as $review)
-            <div class="col-md-4">
+            <div class="col-md-4" data-reveal data-reveal-delay="{{ $loop->index * 100 }}">
                 <div class="testimonial-card p-4 h-100 d-flex flex-column">
                     <div class="mb-3">
                         @for($i=1;$i<=5;$i++)

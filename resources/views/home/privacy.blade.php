@@ -2,7 +2,7 @@
 @extends('layouts.app')
 @section('title','Privacy Policy — DriveEase')
 @section('content')
-<div class="bg-dark text-white py-5"><div class="container text-center"><h1 class="fw-bold">Privacy Policy</h1><p class="text-white-50">Last updated: January 1, 2024</p></div></div>
+@include('partials.page-hero', ['title' => 'Privacy Policy', 'subtitle' => 'Last updated: January 1, 2024'])
 <div class="container py-5"><div class="row justify-content-center"><div class="col-lg-8">
     <div class="prose">
         <h4 class="fw-bold mb-3">1. Information We Collect</h4>
