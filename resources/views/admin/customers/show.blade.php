@@ -35,7 +35,7 @@
                             <td class="small fw-semibold">{{ $b->booking_number }}</td>
                             <td class="small">{{ $b->vehicle?->vehicle_name ?? $b->vehicle_name ?? 'N/A' }}</td>
                             <td class="small">{{ \Carbon\Carbon::parse($b->pickup_date)->format('M d') }} → {{ \Carbon\Carbon::parse($b->return_date)->format('M d, Y') }}</td>
-                            <td class="small">TK {{ number_format($b->final_amount,0) }}</td>
+                            <td class="small text-nowrap">TK {{ number_format($b->final_amount,0) }}</td>
                             <td>{!! booking_status_badge($b->booking_status) !!}</td>
                         </tr>
                         @empty<tr><td colspan="5" class="text-center text-muted">No bookings yet.</td></tr>

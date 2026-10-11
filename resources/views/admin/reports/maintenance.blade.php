@@ -42,7 +42,7 @@
                             <td class="small">{{ $r->vehicle?->vehicle_name ?? $r->vehicle_name ?? 'N/A' }}</td>
                             <td class="small">{{ $r->maintenance_type }}</td>
                             <td class="small">{{ \Carbon\Carbon::parse($r->maintenance_date)->format('M d, Y') }}</td>
-                            <td class="small fw-semibold">TK {{ number_format($r->cost,2) }}</td>
+                            <td class="small fw-semibold text-nowrap">TK {{ number_format($r->cost,2) }}</td>
                             <td>{!! maintenance_status_badge($r->status) !!}</td>
                         </tr>
                         @endforeach

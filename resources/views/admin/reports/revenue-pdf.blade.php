@@ -31,7 +31,7 @@ tr:nth-child(even) td { background: #f9fafb; }
     <tr>
         <td>{{ ucwords(str_replace('_',' ',$method)) }}</td>
         <td>{{ $data['count'] }}</td>
-        <td>TK {{ number_format($data['total'],2) }}</td>
+        <td class="text-nowrap">TK {{ number_format($data['total'],2) }}</td>
     </tr>
     @endforeach
 </table>
@@ -46,7 +46,7 @@ tr:nth-child(even) td { background: #f9fafb; }
         <td>{{ $p->booking?->user?->name ?? $p->user_name ?? 'N/A' }}</td>
         <td>{{ $p->booking?->booking_number ?? $p->booking_number ?? 'N/A' }}</td>
         <td>{{ ucwords(str_replace('_',' ',$p->payment_method)) }}</td>
-        <td>TK {{ number_format($p->amount,2) }}</td>
+        <td class="text-nowrap">TK {{ number_format($p->amount,2) }}</td>
     </tr>
     @endforeach
 </table>

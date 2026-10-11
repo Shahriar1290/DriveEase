@@ -34,10 +34,10 @@ tr:nth-child(even) td { background: #f9fafb; }
         <td>{{ $v->vehicle_name }}</td>
         <td>{{ $v->category?->category_name ?? $v->category_name ?? 'N/A' }}</td>
         <td>{{ $v->registration_number }}</td>
-        <td>TK {{ number_format($v->price_per_day,2) }}</td>
+        <td class="text-nowrap">TK {{ number_format($v->price_per_day,2) }}</td>
         <td>{{ $v->total_rentals }}</td>
         <td>{{ $v->completed_bookings }}</td>
-        <td>TK {{ number_format($v->total_revenue ?? 0,2) }}</td>
+        <td class="text-nowrap">TK {{ number_format($v->total_revenue ?? 0,2) }}</td>
         <td>{{ $v->average_rating }} ⭐</td>
     </tr>
     @endforeach

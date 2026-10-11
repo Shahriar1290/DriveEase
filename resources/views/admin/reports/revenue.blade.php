@@ -86,7 +86,7 @@
                     <td class="small">{{ $p->booking?->user?->name ?? $p->user_name ?? 'N/A' }}</td>
                     <td class="small">{{ $p->booking?->booking_number ?? $p->booking_number ?? 'N/A' }}</td>
                     <td class="small">{{ ucwords(str_replace('_',' ',$p->payment_method)) }}</td>
-                    <td class="fw-semibold text-success">TK {{ number_format($p->amount,2) }}</td>
+                    <td class="fw-semibold text-success text-nowrap">TK {{ number_format($p->amount,2) }}</td>
                 </tr>
                 @endforeach
             </tbody>

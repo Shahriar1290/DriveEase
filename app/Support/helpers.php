@@ -15,13 +15,13 @@ if (!function_exists('booking_status_badge')) {
     function booking_status_badge(string $status): string
     {
         return match ($status) {
-            'pending'   => '<span class="badge bg-warning">Pending</span>',
-            'approved'  => '<span class="badge bg-success">Approved</span>',
-            'active'    => '<span class="badge bg-primary">Active</span>',
-            'completed' => '<span class="badge bg-info">Completed</span>',
-            'cancelled' => '<span class="badge bg-secondary">Cancelled</span>',
-            'rejected'  => '<span class="badge bg-danger">Rejected</span>',
-            default     => '<span class="badge bg-secondary">' . ucfirst($status) . '</span>',
+            'pending'   => '<span class="status-pill status-warning">Pending</span>',
+            'approved'  => '<span class="status-pill status-success">Approved</span>',
+            'active'    => '<span class="status-pill status-primary">Active</span>',
+            'completed' => '<span class="status-pill status-info">Completed</span>',
+            'cancelled' => '<span class="status-pill status-secondary">Cancelled</span>',
+            'rejected'  => '<span class="status-pill status-danger">Rejected</span>',
+            default     => '<span class="status-pill status-secondary">' . ucfirst($status) . '</span>',
         };
     }
 }
@@ -30,11 +30,11 @@ if (!function_exists('payment_status_badge')) {
     function payment_status_badge(string $status): string
     {
         return match ($status) {
-            'completed' => '<span class="badge bg-success">Completed</span>',
-            'pending'   => '<span class="badge bg-warning">Pending</span>',
-            'failed'    => '<span class="badge bg-danger">Failed</span>',
-            'refunded'  => '<span class="badge bg-info">Refunded</span>',
-            default     => '<span class="badge bg-secondary">' . ucfirst($status) . '</span>',
+            'completed' => '<span class="status-pill status-success">Completed</span>',
+            'pending'   => '<span class="status-pill status-warning">Pending</span>',
+            'failed'    => '<span class="status-pill status-danger">Failed</span>',
+            'refunded'  => '<span class="status-pill status-info">Refunded</span>',
+            default     => '<span class="status-pill status-secondary">' . ucfirst($status) . '</span>',
         };
     }
 }
@@ -43,10 +43,10 @@ if (!function_exists('maintenance_status_badge')) {
     function maintenance_status_badge(string $status): string
     {
         return match ($status) {
-            'completed'   => '<span class="badge bg-success">Completed</span>',
-            'in_progress' => '<span class="badge bg-primary">In Progress</span>',
-            'scheduled'   => '<span class="badge bg-warning">Scheduled</span>',
-            default       => '<span class="badge bg-secondary">' . ucfirst($status) . '</span>',
+            'completed'   => '<span class="status-pill status-success">Completed</span>',
+            'in_progress' => '<span class="status-pill status-primary">In Progress</span>',
+            'scheduled'   => '<span class="status-pill status-warning">Scheduled</span>',
+            default       => '<span class="status-pill status-secondary">' . ucfirst($status) . '</span>',
         };
     }
 }

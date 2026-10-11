@@ -2,9 +2,15 @@
 @section('title', 'My Dashboard')
 
 @section('content')
-<div class="content-card mb-4">
-    <h5 class="fw-bold mb-1">Welcome back, {{ auth()->user()->name }}! 👋</h5>
-    <p class="text-muted small mb-0">Here's a summary of your rental activity.</p>
+<div class="welcome-banner mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+    <div>
+        <p class="mb-1 small text-white-50 fw-semibold text-uppercase tracking-wider">{{ now()->format('l, F j') }}</p>
+        <h4 class="fw-bold mb-1">Welcome back, {{ Str::words(auth()->user()->name, 1, '') }}! 👋</h4>
+        <p class="mb-0 small" style="color:rgba(255,255,255,.8)">Here's a summary of your rental activity.</p>
+    </div>
+    <a href="{{ route('vehicles.index') }}" class="btn btn-light flex-shrink-0">
+        <i class="fas fa-car-side"></i> Book a Vehicle
+    </a>
 </div>
 
 {{-- Stat Cards --}}
@@ -21,10 +27,12 @@
     @endphp
     @foreach($cards as $card)
     <div class="col-6 col-md-4">
-        <div class="content-card text-center py-3">
-            <i class="{{ $card['icon'] }} text-{{ $card['color'] }} mb-2" style="font-size:1.5rem"></i>
-            <div class="h4 fw-bold mb-0">{{ $card['value'] }}</div>
-            <div class="text-muted small">{{ $card['label'] }}</div>
+        <div class="stat-tile">
+            <span class="stat-tile-icon bg-{{ $card['color'] }}-subtle text-{{ $card['color'] }}"><i class="{{ $card['icon'] }}"></i></span>
+            <div class="min-w-0">
+                <div class="stat-tile-value">{{ $card['value'] }}</div>
+                <div class="stat-tile-label text-truncate">{{ $card['label'] }}</div>
+            </div>
         </div>
     </div>
     @endforeach
@@ -55,9 +63,10 @@
         </a>
     </div>
     @empty
-    <div class="text-center py-4">
-        <i class="fas fa-calendar-times text-muted mb-2" style="font-size:2rem"></i>
-        <p class="text-muted mb-2">No bookings yet</p>
+    <div class="empty-state py-4">
+        <div class="empty-state-icon"><i class="fas fa-calendar-xmark"></i></div>
+        <p class="fw-semibold mb-1">No bookings yet</p>
+        <p class="text-muted small mb-3">Find a vehicle you love and make your first booking.</p>
         <a href="{{ route('vehicles.index') }}" class="btn btn-primary btn-sm">Browse Vehicles</a>
     </div>
     @endforelse

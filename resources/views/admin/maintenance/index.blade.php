@@ -39,7 +39,7 @@
                     <td class="small">{{ $r->maintenance_type }}</td>
                     <td class="small">{{ \Carbon\Carbon::parse($r->maintenance_date)->format('M d, Y') }}</td>
                     <td class="small text-muted">{{ $r->next_maintenance_date ? \Carbon\Carbon::parse($r->next_maintenance_date)->format('M d, Y') : 'N/A' }}</td>
-                    <td class="fw-semibold">TK {{ number_format($r->cost,2) }}</td>
+                    <td class="fw-semibold text-nowrap">TK {{ number_format($r->cost,2) }}</td>
                     <td class="small">{{ $r->mechanic_name ?? 'N/A' }}</td>
                     <td>{!! maintenance_status_badge($r->status) !!}</td>
                     <td>

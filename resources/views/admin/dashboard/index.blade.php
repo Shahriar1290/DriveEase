@@ -90,7 +90,7 @@
                             <td class="fw-semibold small">{{ $b->booking_number }}</td>
                             <td class="small">{{ $b->user?->name ?? $b->user_name ?? 'N/A' }}</td>
                             <td class="small">{{ $b->vehicle?->vehicle_name ?? $b->vehicle_name ?? 'N/A' }}</td>
-                            <td class="small fw-semibold">TK {{ number_format($b->final_amount,0) }}</td>
+                            <td class="small fw-semibold text-nowrap">TK {{ number_format($b->final_amount,0) }}</td>
                             <td>{!! booking_status_badge($b->booking_status) !!}</td>
                             <td><a href="{{ route('admin.bookings.show', $b->id) }}" class="btn btn-xs btn-light border btn-sm py-0 px-2"><i class="fas fa-eye"></i></a></td>
                         </tr>

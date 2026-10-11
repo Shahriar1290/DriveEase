@@ -43,7 +43,7 @@
                     <td class="small fw-semibold">{{ $p->transaction_id }}</td>
                     <td class="small">{{ $p->booking?->booking_number ?? $p->booking_number ?? 'N/A' }}</td>
                     <td class="small">{{ $p->booking?->user?->name ?? $p->user_name ?? 'N/A' }}</td>
-                    <td class="fw-semibold text-success">TK {{ number_format($p->amount,2) }}</td>
+                    <td class="fw-semibold text-success text-nowrap">TK {{ number_format($p->amount,2) }}</td>
                     <td class="small">{{ ucwords(str_replace('_',' ',$p->payment_method)) }}</td>
                     <td class="small text-muted">{{ $p->payment_date ? \Carbon\Carbon::parse($p->payment_date)->format('M d, Y') : 'Pending' }}</td>
                     <td>{!! payment_status_badge($p->payment_status) !!}</td>
