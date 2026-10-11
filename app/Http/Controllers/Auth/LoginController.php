@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -23,26 +20,22 @@ class LoginController extends Controller
             'password' => 'required',
         ]);
 
-        // Raw SQL lookup instead of Auth::attempt() against Eloquent
-        $row = DB::select("SELECT * FROM users WHERE email = ? LIMIT 1", [$request->email]);
+        $credentials = $request->only('email', 'password');
 
-        if (empty($row) || !Hash::check($request->password, $row[0]->password)) {
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()->withErrors(['email' => 'Invalid email or password.'])->withInput();
         }
 
-        $userRow = $row[0];
+        $user = Auth::user();
 
-        if (!$userRow->is_active) {
+        if (!$user->is_active) {
+            Auth::logout();
             return back()->with('error', 'Your account has been deactivated. Please contact support.');
         }
-        $user = new User();
-        $user->forceFill((array) $userRow);
-        $user->exists = true;
 
-        Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 
-        return $userRow->role === 'admin'
+        return $user->role === 'admin'
             ? redirect()->intended(route('admin.dashboard'))
             : redirect()->intended(route('customer.dashboard'));
     }

@@ -5,6 +5,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\VehicleController as AdminVehicle;
 use App\Http\Controllers\Admin\CategoryController as AdminCategory;
@@ -46,11 +48,17 @@ Route::get('/vehicles/{slug}', [VehicleController::class, 'show'])->name('vehicl
 // Auth Routes
 
 Route::get('/login', [LoginController::class, 'showForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/register', [RegisterController::class, 'showForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'register']);
+Route::post('/register', [RegisterController::class, 'register'])->middleware('throttle:10,1');
+
+// Password Reset Routes
+Route::get('/forgot-password', [ForgotPasswordController::class, 'showForm'])->name('password.request');
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink'])->middleware('throttle:3,1');
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'showForm'])->name('password.reset');
+Route::post('/reset-password', [ResetPasswordController::class, 'reset'])->name('password.update');
 
 // Customer Routes (Protected)
 
@@ -74,7 +82,7 @@ Route::middleware(['auth', CustomerMiddleware::class])->prefix('customer')->name
     // Profile
     Route::get('/profile', [CustomerProfile::class, 'edit'])->name('profile');
     Route::match(['post', 'put'], '/profile', [CustomerProfile::class, 'update'])->name('profile.update');
-    Route::post('/password', [CustomerProfile::class, 'changePassword'])->name('password.update');
+    Route::match(['post', 'put'], '/password', [CustomerProfile::class, 'changePassword'])->name('password.update');
 
     // Reviews
     Route::post('/reviews', [CustomerReview::class, 'store'])->name('reviews.store');
@@ -113,7 +121,7 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
     // Payments
     Route::get('/payments', [AdminPayment::class, 'index'])->name('payments.index');
     Route::get('/payments/{id}', [AdminPayment::class, 'show'])->name('payments.show');
-    Route::post('/payments/{id}/status', [AdminPayment::class, 'updateStatus'])->name('payments.status');
+    Route::match(['post', 'put'], '/payments/{id}/status', [AdminPayment::class, 'updateStatus'])->name('payments.status');
 
     // Customers
     Route::get('/customers', [AdminCustomer::class, 'index'])->name('customers.index');

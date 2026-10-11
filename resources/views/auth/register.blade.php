@@ -25,21 +25,25 @@
                                 <label class="form-label fw-semibold small">Full Name <span class="text-danger">*</span></label>
                                 <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
                                        placeholder="John Doe" value="{{ old('name') }}" required>
+                                @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-semibold small">Email Address <span class="text-danger">*</span></label>
                                 <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
                                        placeholder="you@example.com" value="{{ old('email') }}" required>
+                                @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-semibold small">Phone Number</label>
                                 <input type="tel" name="phone" class="form-control"
                                        placeholder="+880 17XX XXXXXX" value="{{ old('phone') }}">
+                                @error('phone')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
                                 <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
                                        placeholder="Min. 8 characters" required>
+                                @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small">Confirm Password <span class="text-danger">*</span></label>

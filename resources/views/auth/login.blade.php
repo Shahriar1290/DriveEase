@@ -25,22 +25,25 @@
                             <label class="form-label fw-semibold small">Email Address</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-envelope text-muted"></i></span>
-                                <input type="email" name="email" class="form-control border-start-0 ps-0" placeholder="you@example.com" value="{{ old('email') }}" required autofocus>
+                                <input type="email" name="email" class="form-control border-start-0 ps-0 @error('email') is-invalid @enderror" placeholder="you@example.com" value="{{ old('email') }}" required autofocus>
                             </div>
+                            @error('email')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold small">Password</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0"><i class="fas fa-lock text-muted"></i></span>
-                                <input type="password" name="password" class="form-control border-start-0 ps-0" placeholder="••••••••" required>
+                                <input type="password" name="password" class="form-control border-start-0 ps-0 @error('password') is-invalid @enderror" placeholder="••••••••" required>
                                 <button type="button" class="btn btn-light border border-start-0" onclick="togglePwd(this)"><i class="fas fa-eye text-muted"></i></button>
                             </div>
+                            @error('password')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                         </div>
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="remember" id="remember">
                                 <label class="form-check-label small" for="remember">Remember me</label>
                             </div>
+                            <a href="{{ route('password.request') }}" class="text-primary small fw-semibold text-decoration-none">Forgot Password?</a>
                         </div>
                         <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Sign In</button>
                     </form>
