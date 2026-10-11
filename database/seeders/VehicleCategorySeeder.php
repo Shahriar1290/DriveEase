@@ -10,6 +10,7 @@ class VehicleCategorySeeder extends Seeder
 {
     public function run(): void
     {
+        $now = now()->toDateTimeString();
         $categories = [
             ['category_name' => 'Sedan',        'icon' => 'fas fa-car',          'description' => 'Comfortable 4-door sedans for city and highway travel.'],
             ['category_name' => 'SUV',           'icon' => 'fas fa-truck-pickup', 'description' => 'Spacious SUVs for family trips and off-road adventures.'],
@@ -24,13 +25,14 @@ class VehicleCategorySeeder extends Seeder
         foreach ($categories as $i => $cat) {
             DB::insert("
                 INSERT INTO vehicle_categories (category_name, slug, description, icon, is_active, sort_order, created_at, updated_at)
-                VALUES (?, ?, ?, ?, 1, ?, NOW(), NOW())
+                VALUES (?, ?, ?, ?, 1, ?, ?, ?)
             ", [
                 $cat['category_name'],
                 Str::slug($cat['category_name']),
                 $cat['description'],
                 $cat['icon'],
                 $i + 1,
+                $now, $now,
             ]);
         }
     }

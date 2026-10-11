@@ -10,6 +10,7 @@ class BookingSeeder extends Seeder
 {
     public function run(): void
     {
+        $now = now()->toDateTimeString();
         $customerIds = array_map(fn($r) => $r->id, DB::select("SELECT id FROM users WHERE role = 'customer'"));
         $vehicles    = DB::select("SELECT id, price_per_day FROM vehicles");
 
@@ -35,10 +36,10 @@ class BookingSeeder extends Seeder
                     booking_number, user_id, vehicle_id, pickup_date, return_date, total_days,
                     price_per_day, total_cost, discount, tax, final_amount,
                     pickup_location, return_location, booking_status, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 'Dhaka Airport', 'Dhaka Airport', ?, NOW(), NOW())
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, 'Dhaka Airport', 'Dhaka Airport', ?, ?, ?)
             ", [
                 $bookingNumber, $userId, $vehicle->id, $pickup, $return, $days,
-                $vehicle->price_per_day, $total, $tax, $final, $status,
+                $vehicle->price_per_day, $total, $tax, $final, $status, $now, $now,
             ]);
 
             $bookingId = DB::getPdo()->lastInsertId();
@@ -57,7 +58,7 @@ class BookingSeeder extends Seeder
                 INSERT INTO payments (
                     transaction_id, booking_id, amount, payment_method, payment_status,
                     payment_date, receipt_number, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ", [
                 'TXN-' . strtoupper(Str::random(10)),
                 $bookingId,
@@ -66,6 +67,7 @@ class BookingSeeder extends Seeder
                 $paymentStatus,
                 $paymentDate,
                 'RCP-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
+                $now, $now,
             ]);
         }
     }

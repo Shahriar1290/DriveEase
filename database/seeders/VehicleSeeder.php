@@ -10,6 +10,7 @@ class VehicleSeeder extends Seeder
 {
     public function run(): void
     {
+        $now = now()->toDateTimeString();
         $vehicles = [
             // Sedans (cat 1)
             ['Toyota Camry','Toyota','Camry','sedan',1,'petrol','automatic',5,10200,'available',2022,'Silver'],
@@ -165,7 +166,7 @@ class VehicleSeeder extends Seeder
                     description, fuel_type, transmission, seating_capacity, price_per_day, status,
                     color, mileage, engine_cc, air_conditioning, gps, bluetooth, usb_charger, child_seat,
                     total_rentals, average_rating, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, 1, 1, ?, ?, ?, NOW(), NOW())
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, 1, 1, ?, ?, ?, ?, ?)
             ", [
                 $catId, $name, $slug, $brand, $model, $year, $reg, $description,
                 $fuel, $trans, $seats, $price, $status, $color,
@@ -174,6 +175,7 @@ class VehicleSeeder extends Seeder
                 $seats >= 7 ? 1 : 0,
                 rand(0, 80),
                 round(rand(35, 50) / 10, 1),
+                $now, $now,
             ]);
 
             $vehicleId = DB::getPdo()->lastInsertId();
@@ -182,8 +184,8 @@ class VehicleSeeder extends Seeder
 
             DB::insert("
                 INSERT INTO vehicle_images (vehicle_id, image, is_primary, sort_order, created_at, updated_at)
-                VALUES (?, ?, 1, 0, NOW(), NOW())
-            ", [$vehicleId, $img]);
+                VALUES (?, ?, 1, 0, ?, ?)
+            ", [$vehicleId, $img, $now, $now]);
         }
     }
 }

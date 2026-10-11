@@ -11,13 +11,14 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $hashedPassword = Hash::make('password');
+        $now = now()->toDateTimeString();
 
         // Admin
         DB::insert("
             INSERT INTO users (name, email, password, role, phone, address, email_verified_at, is_active, created_at, updated_at)
-            VALUES (?, ?, ?, 'admin', ?, ?, NOW(), 1, NOW(), NOW())
+            VALUES (?, ?, ?, 'admin', ?, ?, ?, 1, ?, ?)
         ", [
-            'Admin User', 'admin@vrms.com', $hashedPassword, '01700000000', '123 Admin Street, Dhaka',
+            'Admin User', 'admin@vrms.com', $hashedPassword, '01700000000', '123 Admin Street, Dhaka', $now, $now, $now,
         ]);
 
         // 20 Customers
@@ -49,13 +50,14 @@ class UserSeeder extends Seeder
         foreach ($customers as $i => $c) {
             DB::insert("
                 INSERT INTO users (name, email, password, role, phone, address, email_verified_at, is_active, created_at, updated_at)
-                VALUES (?, ?, ?, 'customer', ?, ?, NOW(), 1, NOW(), NOW())
+                VALUES (?, ?, ?, 'customer', ?, ?, ?, 1, ?, ?)
             ", [
                 $c['name'],
                 $c['email'],
                 $hashedPassword,
                 $phones[$i % 5] . str_pad($i * 111111, 6, '0', STR_PAD_LEFT),
                 ($i + 1) . ' Customer Lane, City',
+                $now, $now, $now,
             ]);
         }
     }
