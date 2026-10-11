@@ -79,12 +79,12 @@
         <table class="table table-sm align-middle">
             <thead class="table-light"><tr><th>Date</th><th>Transaction ID</th><th>Customer</th><th>Booking#</th><th>Method</th><th>Amount</th></tr></thead>
             <tbody>
-                @foreach(array_slice($payments, 0, 50) as $p)
+                @foreach(collect($payments)->take(50) as $p)
                 <tr>
-                    <td class="small">{{ \Carbon\Carbon::parse($p->payment_date)->format('M d, Y') }}</td>
+                    <td class="small">{{ $p->payment_date ? \Carbon\Carbon::parse($p->payment_date)->format('M d, Y') : 'Pending' }}</td>
                     <td class="small">{{ $p->transaction_id }}</td>
-                    <td class="small">{{ $p->user_name }}</td>
-                    <td class="small">{{ $p->booking_number }}</td>
+                    <td class="small">{{ $p->booking?->user?->name ?? $p->user_name ?? 'N/A' }}</td>
+                    <td class="small">{{ $p->booking?->booking_number ?? $p->booking_number ?? 'N/A' }}</td>
                     <td class="small">{{ ucwords(str_replace('_',' ',$p->payment_method)) }}</td>
                     <td class="fw-semibold text-success">TK {{ number_format($p->amount,2) }}</td>
                 </tr>

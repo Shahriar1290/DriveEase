@@ -20,14 +20,14 @@
     @else
     <div class="row g-4">
         @foreach($wishlists as $w)
+        @php $veh = $w->vehicle; @endphp
         <div class="col-sm-6 col-xl-4">
             <div class="card border-0 rounded-3 overflow-hidden shadow-sm h-100">
                 <div class="position-relative">
-                    <img src="{{ vehicle_image_url($w->primary_image) }}" class="card-img-top"
-                         style="height:160px;object-fit:cover"
-                         onerror="this.src='https://placehold.co/300x160/1e40af/fff?text={{ urlencode($w->vehicle_name) }}'">
-                    <span class="position-absolute top-0 start-0 m-2 badge bg-{{ $w->status === 'available' ? 'success' : 'secondary' }}">
-                        {{ ucfirst($w->status) }}
+                    <img src="{{ vehicle_image_url($veh?->primary_image ?? $w->primary_image ?? null) }}" class="card-img-top"
+                         style="height:160px;object-fit:cover">
+                    <span class="position-absolute top-0 start-0 m-2 badge bg-{{ ($veh?->status ?? 'available') === 'available' ? 'success' : 'secondary' }}">
+                        {{ ucfirst($veh?->status ?? 'available') }}
                     </span>
                     <form action="{{ route('customer.wishlist.toggle') }}" method="POST" class="d-inline">
                         @csrf
@@ -38,19 +38,19 @@
                     </form>
                 </div>
                 <div class="card-body d-flex flex-column p-3">
-                    <h6 class="fw-bold mb-1">{{ $w->vehicle_name }}</h6>
-                    <p class="text-muted small mb-2">{{ $w->brand }} {{ $w->model }} · {{ $w->year }}</p>
+                    <h6 class="fw-bold mb-1">{{ $veh?->vehicle_name ?? 'Vehicle' }}</h6>
+                    <p class="text-muted small mb-2">{{ $veh?->brand }} {{ $veh?->model }} · {{ $veh?->year }}</p>
                     <div class="d-flex gap-2 text-muted small mb-3">
-                        <span><i class="fas fa-users me-1"></i>{{ $w->seating_capacity }}</span>
-                        <span><i class="fas fa-gas-pump me-1"></i>{{ ucfirst($w->fuel_type) }}</span>
-                        <span><i class="fas fa-cog me-1"></i>{{ ucfirst($w->transmission) }}</span>
+                        <span><i class="fas fa-users me-1"></i>{{ $veh?->seating_capacity }}</span>
+                        <span><i class="fas fa-gas-pump me-1"></i>{{ ucfirst($veh?->fuel_type ?? '') }}</span>
+                        <span><i class="fas fa-cog me-1"></i>{{ ucfirst($veh?->transmission ?? '') }}</span>
                     </div>
                     <div class="mt-auto d-flex justify-content-between align-items-center">
                         <div>
-                            <span class="fw-bold text-primary">TK {{ number_format($w->price_per_day) }}</span>
+                            <span class="fw-bold text-primary">TK {{ number_format($veh?->price_per_day ?? 0) }}</span>
                             <span class="text-muted small">/day</span>
                         </div>
-                        <a href="{{ route('vehicles.show', $w->slug) }}" class="btn btn-primary btn-sm">
+                        <a href="{{ route('vehicles.show', $veh?->slug ?? '#') }}" class="btn btn-primary btn-sm">
                             View
                         </a>
                     </div>

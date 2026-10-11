@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Vehicle;
+use App\Models\VehicleCategory;
+use App\Models\VehicleImage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -12,56 +14,33 @@ class VehicleController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = 15;
-        $page    = max(1, (int) $request->get('page', 1));
-        $offset  = ($page - 1) * $perPage;
-
-        $where    = ['1=1'];
-        $bindings = [];
+        $query = Vehicle::with('category')
+            ->withCount('bookings')
+            ->with('firstImage');
 
         if ($search = $request->search) {
-            $where[]    = "(v.vehicle_name LIKE ? OR v.brand LIKE ? OR v.registration_number LIKE ?)";
-            $like       = "%{$search}%";
-            $bindings[] = $like; $bindings[] = $like; $bindings[] = $like;
+            $query->where(function ($q) use ($search) {
+                $q->where('vehicle_name', 'like', "%{$search}%")
+                    ->orWhere('brand', 'like', "%{$search}%")
+                    ->orWhere('registration_number', 'like', "%{$search}%");
+            });
         }
         if ($cat = $request->category_id) {
-            $where[]    = "v.category_id = ?";
-            $bindings[] = $cat;
+            $query->where('category_id', $cat);
         }
         if ($status = $request->status) {
-            $where[]    = "v.status = ?";
-            $bindings[] = $status;
+            $query->where('status', $status);
         }
-        $whereSql = implode(' AND ', $where);
 
-        $total = DB::select("SELECT COUNT(*) AS total FROM vehicles v WHERE {$whereSql}", $bindings)[0]->total;
-
-        $rows = DB::select("
-            SELECT v.*, c.category_name,
-                   (SELECT COUNT(*) FROM bookings b WHERE b.vehicle_id = v.id) AS bookings_count,
-                   (SELECT vi.image FROM vehicle_images vi
-                     WHERE vi.vehicle_id = v.id
-                     ORDER BY vi.is_primary DESC, vi.sort_order ASC LIMIT 1) AS primary_image
-            FROM vehicles v
-            INNER JOIN vehicle_categories c ON c.id = v.category_id
-            WHERE {$whereSql}
-            ORDER BY v.created_at DESC
-            LIMIT {$perPage} OFFSET {$offset}
-        ", $bindings);
-
-        $vehicles = new \Illuminate\Pagination\LengthAwarePaginator(
-            $rows, $total, $perPage, $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
-
-        $categories = DB::select("SELECT * FROM vehicle_categories ORDER BY category_name ASC");
+        $vehicles = $query->latest()->paginate(15)->withQueryString();
+        $categories = VehicleCategory::orderBy('category_name')->get();
 
         return view('admin.vehicles.index', compact('vehicles', 'categories'));
     }
 
     public function create()
     {
-        $categories = DB::select("SELECT * FROM vehicle_categories ORDER BY category_name ASC");
+        $categories = VehicleCategory::orderBy('category_name')->get();
         return view('admin.vehicles.create', compact('categories'));
     }
 
@@ -86,42 +65,26 @@ class VehicleController extends Controller
             'images.*'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
         ]);
 
-        // Manual uniqueness check on registration_number
-        $exists = DB::select("SELECT id FROM vehicles WHERE registration_number = ?", [$data['registration_number']]);
-        if (!empty($exists)) {
+        if (Vehicle::where('registration_number', $data['registration_number'])->exists()) {
             return back()->withErrors(['registration_number' => 'This registration number is already in use.'])->withInput();
         }
 
-        $slug = Str::slug($data['vehicle_name'] . '-' . $data['registration_number']);
-
-        DB::insert("
-            INSERT INTO vehicles (
-                category_id, vehicle_name, slug, brand, model, year, registration_number,
-                description, fuel_type, transmission, seating_capacity, price_per_day, status,
-                color, mileage, engine_cc, air_conditioning, gps, bluetooth, usb_charger, child_seat,
-                total_rentals, average_rating, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, NOW(), NOW())
-        ", [
-            $data['category_id'], $data['vehicle_name'], $slug, $data['brand'], $data['model'],
-            $data['year'] ?? null, $data['registration_number'], $data['description'] ?? null,
-            $data['fuel_type'], $data['transmission'], $data['seating_capacity'], $data['price_per_day'],
-            $data['status'], $data['color'] ?? null, $data['mileage'] ?? null, $data['engine_cc'] ?? null,
-            $request->boolean('air_conditioning') ? 1 : 0,
-            $request->boolean('gps') ? 1 : 0,
-            $request->boolean('bluetooth') ? 1 : 0,
-            $request->boolean('usb_charger') ? 1 : 0,
-            $request->boolean('child_seat') ? 1 : 0,
-        ]);
-
-        $vehicleId = DB::getPdo()->lastInsertId();
+        $vehicle = Vehicle::create(array_merge($data, [
+            'slug' => Str::slug($data['vehicle_name'] . '-' . $data['registration_number']),
+            'air_conditioning' => $request->boolean('air_conditioning'),
+            'gps' => $request->boolean('gps'),
+            'bluetooth' => $request->boolean('bluetooth'),
+            'usb_charger' => $request->boolean('usb_charger'),
+            'child_seat' => $request->boolean('child_seat'),
+        ]));
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $index => $file) {
-                $path = $file->store('vehicles', 'public');
-                DB::insert("
-                    INSERT INTO vehicle_images (vehicle_id, image, is_primary, sort_order, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, NOW(), NOW())
-                ", [$vehicleId, $path, $index === 0 ? 1 : 0, $index]);
+                $vehicle->images()->create([
+                    'image' => $file->store('vehicles', 'public'),
+                    'is_primary' => $index === 0,
+                    'sort_order' => $index,
+                ]);
             }
         }
 
@@ -130,38 +93,28 @@ class VehicleController extends Controller
 
     public function show(int $id)
     {
-        $vehicle = DB::select("
-            SELECT v.*, c.category_name FROM vehicles v
-            INNER JOIN vehicle_categories c ON c.id = v.category_id
-            WHERE v.id = ? LIMIT 1
-        ", [$id]);
-        abort_if(empty($vehicle), 404);
-        $vehicle = $vehicle[0];
+        $vehicle = Vehicle::with('category')->findOrFail($id);
 
-        $images = DB::select("SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY sort_order ASC", [$id]);
+        $images = $vehicle->images()->orderBy('sort_order')->get();
 
-        $bookings = DB::select("
-            SELECT b.*, u.name AS user_name
-            FROM bookings b
-            INNER JOIN users u ON u.id = b.user_id
-            WHERE b.vehicle_id = ?
-            ORDER BY b.created_at DESC
-            LIMIT 8
-        ", [$id]);
+        $bookings = $vehicle->bookings()
+            ->with('user:id,name')
+            ->latest()
+            ->limit(8)
+            ->get();
 
-        $maintenanceRecords = DB::select("SELECT * FROM maintenance_records WHERE vehicle_id = ? ORDER BY maintenance_date DESC", [$id]);
+        $maintenanceRecords = $vehicle->maintenanceRecords()
+            ->orderByDesc('maintenance_date')
+            ->get();
 
-        $reviews = DB::select("
-            SELECT r.*, u.name AS user_name
-            FROM reviews r
-            INNER JOIN users u ON u.id = r.user_id
-            WHERE r.vehicle_id = ?
-            ORDER BY r.created_at DESC
-            LIMIT 5
-        ", [$id]);
+        $reviews = $vehicle->reviews()
+            ->with('user:id,name')
+            ->latest()
+            ->limit(5)
+            ->get();
 
-        $approvedReviewCount = DB::select("SELECT COUNT(*) AS total FROM reviews WHERE vehicle_id = ? AND is_approved = 1", [$id])[0]->total;
-        $allReviewCount      = DB::select("SELECT COUNT(*) AS total FROM reviews WHERE vehicle_id = ?", [$id])[0]->total;
+        $approvedReviewCount = $vehicle->reviews()->where('is_approved', true)->count();
+        $allReviewCount = $vehicle->reviews()->count();
 
         return view('admin.vehicles.show', compact(
             'vehicle', 'images', 'bookings', 'maintenanceRecords', 'reviews', 'approvedReviewCount', 'allReviewCount'
@@ -170,20 +123,15 @@ class VehicleController extends Controller
 
     public function edit(int $id)
     {
-        $vehicle = DB::select("SELECT * FROM vehicles WHERE id = ? LIMIT 1", [$id]);
-        abort_if(empty($vehicle), 404);
-        $vehicle = $vehicle[0];
-        $vehicle->images = DB::select("SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY sort_order ASC", [$id]);
+        $vehicle = Vehicle::with('images')->findOrFail($id);
+        $categories = VehicleCategory::orderBy('category_name')->get();
 
-        $categories = DB::select("SELECT * FROM vehicle_categories ORDER BY category_name ASC");
-
-        return view('admin.vehicles.edit', compact('vehicle', 'categories'));
+        return view('admin.vehicles.create', compact('vehicle', 'categories'));
     }
 
     public function update(Request $request, int $id)
     {
-        $existing = DB::select("SELECT * FROM vehicles WHERE id = ? LIMIT 1", [$id]);
-        abort_if(empty($existing), 404);
+        $vehicle = Vehicle::findOrFail($id);
 
         $data = $request->validate([
             'category_id'         => 'required|integer',
@@ -204,55 +152,36 @@ class VehicleController extends Controller
             'new_images.*'         => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
         ]);
 
-        $regTaken = DB::select(
-            "SELECT id FROM vehicles WHERE registration_number = ? AND id != ?",
-            [$data['registration_number'], $id]
-        );
-        if (!empty($regTaken)) {
+        if (Vehicle::where('registration_number', $data['registration_number'])->where('id', '!=', $id)->exists()) {
             return back()->withErrors(['registration_number' => 'This registration number is already in use.'])->withInput();
         }
 
-        DB::update("
-            UPDATE vehicles SET
-                category_id = ?, vehicle_name = ?, brand = ?, model = ?, year = ?, registration_number = ?,
-                description = ?, fuel_type = ?, transmission = ?, seating_capacity = ?, price_per_day = ?,
-                status = ?, color = ?, mileage = ?, engine_cc = ?,
-                air_conditioning = ?, gps = ?, bluetooth = ?, usb_charger = ?, child_seat = ?,
-                updated_at = NOW()
-            WHERE id = ?
-        ", [
-            $data['category_id'], $data['vehicle_name'], $data['brand'], $data['model'],
-            $data['year'] ?? null, $data['registration_number'], $data['description'] ?? null,
-            $data['fuel_type'], $data['transmission'], $data['seating_capacity'], $data['price_per_day'],
-            $data['status'], $data['color'] ?? null, $data['mileage'] ?? null, $data['engine_cc'] ?? null,
-            $request->boolean('air_conditioning') ? 1 : 0,
-            $request->boolean('gps') ? 1 : 0,
-            $request->boolean('bluetooth') ? 1 : 0,
-            $request->boolean('usb_charger') ? 1 : 0,
-            $request->boolean('child_seat') ? 1 : 0,
-            $id,
-        ]);
+        $vehicle->update(array_merge($data, [
+            'air_conditioning' => $request->boolean('air_conditioning'),
+            'gps' => $request->boolean('gps'),
+            'bluetooth' => $request->boolean('bluetooth'),
+            'usb_charger' => $request->boolean('usb_charger'),
+            'child_seat' => $request->boolean('child_seat'),
+        ]));
 
-        // Remove deleted images
         if ($request->delete_images) {
             foreach ($request->delete_images as $imgId) {
-                $img = DB::select("SELECT * FROM vehicle_images WHERE id = ? AND vehicle_id = ? LIMIT 1", [$imgId, $id]);
-                if (!empty($img)) {
-                    Storage::disk('public')->delete($img[0]->image);
-                    DB::delete("DELETE FROM vehicle_images WHERE id = ?", [$imgId]);
+                $img = VehicleImage::where('id', $imgId)->where('vehicle_id', $id)->first();
+                if ($img) {
+                    Storage::disk('public')->delete($img->image);
+                    $img->delete();
                 }
             }
         }
 
-        // Add new images
         if ($request->hasFile('new_images')) {
-            $existingCount = DB::select("SELECT COUNT(*) AS total FROM vehicle_images WHERE vehicle_id = ?", [$id])[0]->total;
+            $existingCount = $vehicle->images()->count();
             foreach ($request->file('new_images') as $index => $file) {
-                $path = $file->store('vehicles', 'public');
-                DB::insert("
-                    INSERT INTO vehicle_images (vehicle_id, image, is_primary, sort_order, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, NOW(), NOW())
-                ", [$id, $path, ($existingCount === 0 && $index === 0) ? 1 : 0, $existingCount + $index]);
+                $vehicle->images()->create([
+                    'image' => $file->store('vehicles', 'public'),
+                    'is_primary' => $existingCount === 0 && $index === 0,
+                    'sort_order' => $existingCount + $index,
+                ]);
             }
         }
 
@@ -261,14 +190,17 @@ class VehicleController extends Controller
 
     public function destroy(int $id)
     {
-        $images = DB::select("SELECT * FROM vehicle_images WHERE vehicle_id = ?", [$id]);
-        foreach ($images as $img) {
+        $vehicle = Vehicle::findOrFail($id);
+
+        if ($vehicle->bookings()->exists()) {
+            return back()->with('error', 'Cannot delete this vehicle because it has existing booking history. Set its status to "inactive" instead.');
+        }
+
+        foreach ($vehicle->images as $img) {
             Storage::disk('public')->delete($img->image);
         }
 
-        // Foreign keys cascade in DB schema, but we delete explicitly for clarity
-        DB::delete("DELETE FROM vehicle_images WHERE vehicle_id = ?", [$id]);
-        DB::delete("DELETE FROM vehicles WHERE id = ?", [$id]);
+        $vehicle->delete();
 
         return redirect()->route('admin.vehicles.index')->with('success', 'Vehicle deleted successfully.');
     }

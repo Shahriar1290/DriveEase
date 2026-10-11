@@ -20,12 +20,11 @@
     @foreach($bookings as $b)
     <div class="border rounded-3 p-3 mb-3">
         <div class="d-flex gap-3 align-items-start flex-wrap">
-            <img src="{{ vehicle_image_url($b->primary_image) }}" class="rounded-2 flex-shrink-0"
-                 width="100" height="70" style="object-fit:cover"
-                 onerror="this.src='https://placehold.co/100x70/1e40af/fff?text=V'">
+            <img src="{{ vehicle_image_url($b->vehicle?->primary_image ?? $b->primary_image ?? null) }}" class="rounded-2 flex-shrink-0"
+                 width="100" height="70" style="object-fit:cover">
             <div class="flex-grow-1">
                 <div class="d-flex justify-content-between align-items-start mb-1">
-                    <h6 class="fw-bold mb-0">{{ $b->vehicle_name }}</h6>
+                    <h6 class="fw-bold mb-0">{{ $b->vehicle?->vehicle_name ?? $b->vehicle_name ?? 'Vehicle' }}</h6>
                     {!! booking_status_badge($b->booking_status) !!}
                 </div>
                 <p class="text-muted small mb-1">
@@ -35,8 +34,9 @@
                     <span><i class="fas fa-calendar-alt me-1 text-primary"></i>{{ \Carbon\Carbon::parse($b->pickup_date)->format('M d, Y') }} → {{ \Carbon\Carbon::parse($b->return_date)->format('M d, Y') }}</span>
                     <span><i class="fas fa-clock me-1 text-primary"></i>{{ $b->total_days }} days</span>
                     <span><i class="fas fa-money-bill me-1 text-primary"></i>TK {{ number_format($b->final_amount, 2) }}</span>
-                    @if($b->payment_method)
-                    <span><i class="fas fa-credit-card me-1 text-primary"></i>{{ ucwords(str_replace('_',' ',$b->payment_method)) }}</span>
+                    @php $pMethod = $b->payment?->payment_method ?? $b->payment_method ?? null; @endphp
+                    @if($pMethod)
+                    <span><i class="fas fa-credit-card me-1 text-primary"></i>{{ ucwords(str_replace('_',' ',$pMethod)) }}</span>
                     @endif
                 </div>
             </div>

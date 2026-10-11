@@ -32,7 +32,7 @@ tr:nth-child(even) td { background: #f9fafb; }
     @foreach($vehicles as $v)
     <tr>
         <td>{{ $v->vehicle_name }}</td>
-        <td>{{ $v->category_name }}</td>
+        <td>{{ $v->category?->category_name ?? $v->category_name ?? 'N/A' }}</td>
         <td>{{ $v->registration_number }}</td>
         <td>TK {{ number_format($v->price_per_day,2) }}</td>
         <td>{{ $v->total_rentals }}</td>

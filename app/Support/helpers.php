@@ -73,7 +73,7 @@ if (!function_exists('category_image_url')) {
 }
 
 if (!function_exists('user_avatar_url')) {
-    function user_avatar_url(?string $path, string $name = ''): string
+    function user_avatar_url(?string $path, ?string $name = ''): string
     {
         if ($path) {
             return asset('storage/' . $path);

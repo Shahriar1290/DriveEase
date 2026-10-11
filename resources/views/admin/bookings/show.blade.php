@@ -21,20 +21,19 @@
                 <div class="col-md-6">
                     <div class="bg-light rounded p-3">
                         <h6 class="fw-semibold mb-3"><i class="fas fa-user text-primary me-2"></i>Customer</h6>
-                        <p class="mb-1 fw-semibold">{{ $booking->user_name }}</p>
-                        <p class="mb-1 text-muted small">{{ $booking->user_email }}</p>
-                        <p class="mb-0 text-muted small">{{ $booking->user_phone ?? 'N/A' }}</p>
+                        <p class="mb-1 fw-semibold">{{ $booking->user?->name ?? $booking->user_name ?? 'N/A' }}</p>
+                        <p class="mb-1 text-muted small">{{ $booking->user?->email ?? $booking->user_email ?? 'N/A' }}</p>
+                        <p class="mb-0 text-muted small">{{ $booking->user?->phone ?? $booking->user_phone ?? 'N/A' }}</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="bg-light rounded p-3">
                         <h6 class="fw-semibold mb-3"><i class="fas fa-car text-primary me-2"></i>Vehicle</h6>
                         <div class="d-flex gap-2">
-                            <img src="{{ vehicle_image_url($booking->primary_image) }}" class="rounded" width="60" height="45" style="object-fit:cover"
-                                 onerror="this.src='https://placehold.co/60x45/1e40af/fff?text=V'">
+                            <img src="{{ vehicle_image_url($booking->vehicle?->primary_image ?? $booking->primary_image ?? null) }}" class="rounded" width="60" height="45" style="object-fit:cover">
                             <div>
-                                <p class="mb-0 fw-semibold">{{ $booking->vehicle_name }}</p>
-                                <p class="mb-0 text-muted small">{{ $booking->registration_number }}</p>
+                                <p class="mb-0 fw-semibold">{{ $booking->vehicle?->vehicle_name ?? $booking->vehicle_name ?? 'N/A' }}</p>
+                                <p class="mb-0 text-muted small">{{ $booking->vehicle?->registration_number ?? $booking->registration_number ?? 'N/A' }}</p>
                                 <p class="mb-0 text-muted small">TK {{ $booking->price_per_day }}/day</p>
                             </div>
                         </div>

@@ -26,8 +26,8 @@
             <tbody>
                 @forelse($reviews as $r)
                 <tr>
-                    <td class="small fw-semibold">{{ $r->user_name }}</td>
-                    <td class="small">{{ $r->vehicle_name }}</td>
+                    <td class="small fw-semibold">{{ $r->user?->name ?? $r->user_name ?? 'N/A' }}</td>
+                    <td class="small">{{ $r->vehicle?->vehicle_name ?? $r->vehicle_name ?? 'N/A' }}</td>
                     <td>
                         <div class="d-flex gap-1">
                             @for($i=1;$i<=5;$i++)<i class="fas fa-star {{ $i<=$r->rating?'text-warning':'text-muted' }}" style="font-size:11px"></i>@endfor

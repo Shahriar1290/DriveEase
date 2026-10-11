@@ -38,10 +38,9 @@
     </div>
     @forelse($recentBookings as $b)
     <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
-        <img src="{{ vehicle_image_url($b->primary_image) }}" class="rounded" width="60" height="45" style="object-fit:cover"
-             onerror="this.src='https://placehold.co/60x45/1e40af/fff?text=V'">
+        <img src="{{ vehicle_image_url($b->vehicle?->primary_image ?? $b->primary_image ?? null) }}" class="rounded" width="60" height="45" style="object-fit:cover">
         <div class="flex-grow-1 overflow-hidden">
-            <div class="fw-semibold small text-truncate">{{ $b->vehicle_name }}</div>
+            <div class="fw-semibold small text-truncate">{{ $b->vehicle?->vehicle_name ?? $b->vehicle_name ?? 'Vehicle' }}</div>
             <div class="text-muted" style="font-size:11px">
                 {{ \Carbon\Carbon::parse($b->pickup_date)->format('M d') }} → {{ \Carbon\Carbon::parse($b->return_date)->format('M d, Y') }}
                 · {{ $b->total_days }} days

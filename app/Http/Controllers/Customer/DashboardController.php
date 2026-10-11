@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\DB;
+use App\Models\Booking;
+use App\Models\Notification;
+use App\Models\Wishlist;
 
 class DashboardController extends Controller
 {
@@ -12,46 +14,24 @@ class DashboardController extends Controller
         $userId = auth()->id();
 
         $stats = [
-            'total_bookings' => DB::select(
-                "SELECT COUNT(*) AS total FROM bookings WHERE user_id = ?", [$userId]
-            )[0]->total,
-
-            'active_bookings' => DB::select(
-                "SELECT COUNT(*) AS total FROM bookings WHERE user_id = ? AND booking_status IN ('approved','active')", [$userId]
-            )[0]->total,
-
-            'completed_bookings' => DB::select(
-                "SELECT COUNT(*) AS total FROM bookings WHERE user_id = ? AND booking_status = 'completed'", [$userId]
-            )[0]->total,
-
-            'pending_bookings' => DB::select(
-                "SELECT COUNT(*) AS total FROM bookings WHERE user_id = ? AND booking_status = 'pending'", [$userId]
-            )[0]->total,
-
-            'wishlist_count' => DB::select(
-                "SELECT COUNT(*) AS total FROM wishlists WHERE user_id = ?", [$userId]
-            )[0]->total,
-
-            'unread_notifications' => DB::select(
-                "SELECT COUNT(*) AS total FROM notifications WHERE user_id = ? AND status = 'unread'", [$userId]
-            )[0]->total,
+            'total_bookings' => Booking::where('user_id', $userId)->count(),
+            'active_bookings' => Booking::where('user_id', $userId)->whereIn('booking_status', ['approved', 'active'])->count(),
+            'completed_bookings' => Booking::where('user_id', $userId)->where('booking_status', 'completed')->count(),
+            'pending_bookings' => Booking::where('user_id', $userId)->where('booking_status', 'pending')->count(),
+            'wishlist_count' => Wishlist::where('user_id', $userId)->count(),
+            'unread_notifications' => Notification::where('user_id', $userId)->where('status', 'unread')->count(),
         ];
 
-        $recentBookings = DB::select("
-            SELECT b.*, v.vehicle_name,
-                   (SELECT vi.image FROM vehicle_images vi
-                     WHERE vi.vehicle_id = v.id
-                     ORDER BY vi.is_primary DESC, vi.sort_order ASC LIMIT 1) AS primary_image
-            FROM bookings b
-            INNER JOIN vehicles v ON v.id = b.vehicle_id
-            WHERE b.user_id = ?
-            ORDER BY b.created_at DESC
-            LIMIT 5
-        ", [$userId]);
+        $recentBookings = Booking::with(['vehicle:id,vehicle_name', 'vehicle.firstImage'])
+            ->where('user_id', $userId)
+            ->latest()
+            ->limit(5)
+            ->get();
 
-        $notifications = DB::select("
-            SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 10
-        ", [$userId]);
+        $notifications = Notification::where('user_id', $userId)
+            ->latest()
+            ->limit(10)
+            ->get();
 
         return view('customer.dashboard.index', compact('stats', 'recentBookings', 'notifications'));
     }

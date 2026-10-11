@@ -46,10 +46,10 @@
                 <tr>
                     <td class="fw-semibold small text-primary">{{ $b->booking_number }}</td>
                     <td>
-                        <div class="fw-semibold small">{{ $b->user_name }}</div>
-                        <div class="text-muted" style="font-size:11px">{{ $b->user_email }}</div>
+                        <div class="fw-semibold small">{{ $b->user?->name ?? $b->user_name ?? 'N/A' }}</div>
+                        <div class="text-muted" style="font-size:11px">{{ $b->user?->email ?? $b->user_email ?? 'N/A' }}</div>
                     </td>
-                    <td class="small">{{ $b->vehicle_name }}</td>
+                    <td class="small">{{ $b->vehicle?->vehicle_name ?? $b->vehicle_name ?? 'N/A' }}</td>
                     <td class="small">
                         <div>{{ \Carbon\Carbon::parse($b->pickup_date)->format('M d') }}</div>
                         <div class="text-muted">→ {{ \Carbon\Carbon::parse($b->return_date)->format('M d, Y') }}</div>

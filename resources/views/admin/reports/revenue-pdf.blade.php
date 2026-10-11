@@ -41,10 +41,10 @@ tr:nth-child(even) td { background: #f9fafb; }
     <tr><th>Date</th><th>Transaction ID</th><th>Customer</th><th>Booking#</th><th>Method</th><th>Amount</th></tr>
     @foreach($payments as $p)
     <tr>
-        <td>{{ \Carbon\Carbon::parse($p->payment_date)->format('M d, Y') }}</td>
+        <td>{{ $p->payment_date ? \Carbon\Carbon::parse($p->payment_date)->format('M d, Y') : 'Pending' }}</td>
         <td>{{ $p->transaction_id }}</td>
-        <td>{{ $p->user_name }}</td>
-        <td>{{ $p->booking_number }}</td>
+        <td>{{ $p->booking?->user?->name ?? $p->user_name ?? 'N/A' }}</td>
+        <td>{{ $p->booking?->booking_number ?? $p->booking_number ?? 'N/A' }}</td>
         <td>{{ ucwords(str_replace('_',' ',$p->payment_method)) }}</td>
         <td>TK {{ number_format($p->amount,2) }}</td>
     </tr>

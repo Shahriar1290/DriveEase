@@ -2,134 +2,101 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Vehicle;
+use App\Models\VehicleCategory;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class VehicleController extends Controller
 {
     public function index(Request $request)
     {
         $perPage = 12;
-        $page    = max(1, (int) $request->get('page', 1));
-        $offset  = ($page - 1) * $perPage;
 
-        // Build WHERE clause dynamically but always with bound parameters
-        $where    = ["v.status = 'available'"];
-        $bindings = [];
+        $query = Vehicle::available()
+            ->with('category')
+            ->withCount(['reviews as review_count' => function ($q) {
+                $q->where('is_approved', true);
+            }])
+            ->with('firstImage');
 
         if ($search = $request->get('search')) {
-            $where[]    = "(v.vehicle_name LIKE ? OR v.brand LIKE ? OR v.model LIKE ?)";
-            $like       = "%{$search}%";
-            $bindings[] = $like;
-            $bindings[] = $like;
-            $bindings[] = $like;
+            $query->where(function ($q) use ($search) {
+                $q->where('vehicle_name', 'like', "%{$search}%")
+                    ->orWhere('brand', 'like', "%{$search}%")
+                    ->orWhere('model', 'like', "%{$search}%");
+            });
         }
         if ($category = $request->get('category')) {
-            $where[]    = "v.category_id = ?";
-            $bindings[] = $category;
+            $query->where('category_id', $category);
         }
         if ($fuel = $request->get('fuel_type')) {
-            $where[]    = "v.fuel_type = ?";
-            $bindings[] = $fuel;
+            $query->where('fuel_type', $fuel);
         }
         if ($trans = $request->get('transmission')) {
-            $where[]    = "v.transmission = ?";
-            $bindings[] = $trans;
+            $query->where('transmission', $trans);
         }
         if ($min = $request->get('min_price')) {
-            $where[]    = "v.price_per_day >= ?";
-            $bindings[] = $min;
+            $query->where('price_per_day', '>=', $min);
         }
         if ($max = $request->get('max_price')) {
-            $where[]    = "v.price_per_day <= ?";
-            $bindings[] = $max;
+            $query->where('price_per_day', '<=', $max);
         }
 
-        $whereSql = implode(' AND ', $where);
+        $query->orderBy(match ($request->get('sort', 'popular')) {
+            'price_low'  => 'price_per_day',
+            'price_high' => 'price_per_day',
+            'newest'     => 'created_at',
+            default      => 'total_rentals',
+        }, $request->get('sort', 'popular') === 'price_high' ? 'desc' : ($request->get('sort', 'popular') === 'newest' ? 'desc' : 'desc'));
 
-        $orderSql = match ($request->get('sort', 'popular')) {
-            'price_low'  => 'v.price_per_day ASC',
-            'price_high' => 'v.price_per_day DESC',
-            'newest'     => 'v.created_at DESC',
-            default      => 'v.total_rentals DESC',
-        };
+        $vehicles = $query->paginate($perPage);
 
-        $countRow = DB::select("SELECT COUNT(*) AS total FROM vehicles v WHERE {$whereSql}", $bindings);
-        $total    = $countRow[0]->total;
+        $categories = VehicleCategory::where('is_active', true)
+            ->withCount('vehicles')
+            ->orderBy('sort_order')
+            ->get();
 
-        $rows = DB::select("
-            SELECT v.*, c.category_name,
-                   (SELECT vi.image FROM vehicle_images vi
-                     WHERE vi.vehicle_id = v.id
-                     ORDER BY vi.is_primary DESC, vi.sort_order ASC LIMIT 1) AS primary_image,
-                   (SELECT COUNT(*) FROM reviews r WHERE r.vehicle_id = v.id AND r.is_approved = 1) AS review_count
-            FROM vehicles v
-            INNER JOIN vehicle_categories c ON c.id = v.category_id
-            WHERE {$whereSql}
-            ORDER BY {$orderSql}
-            LIMIT {$perPage} OFFSET {$offset}
-        ", $bindings);
-
-        $vehicles = $this->makePaginator($rows, $total, $perPage, $page, $request);
-
-        $categories = DB::select("
-            SELECT c.*, (SELECT COUNT(*) FROM vehicles v WHERE v.category_id = c.id) AS vehicles_count
-            FROM vehicle_categories c
-            WHERE c.is_active = 1
-        ");
-
-        $maxPriceRow = DB::select("SELECT MAX(price_per_day) AS max_price FROM vehicles WHERE status = 'available'");
-        $maxPrice    = $maxPriceRow[0]->max_price ?? 1000;
+        $maxPrice = Vehicle::available()->max('price_per_day') ?? 1000;
 
         return view('home.vehicles', compact('vehicles', 'categories', 'maxPrice'));
     }
 
     public function show(string $slug)
     {
-        $vehicle = DB::select("
-            SELECT v.*, c.category_name, c.id AS category_id_ref
-            FROM vehicles v
-            INNER JOIN vehicle_categories c ON c.id = v.category_id
-            WHERE v.slug = ?
-            LIMIT 1
-        ", [$slug]);
+        $vehicle = Vehicle::where('slug', $slug)
+            ->with('category')
+            ->withCount(['reviews as review_count' => function ($q) {
+                $q->where('is_approved', true);
+            }])
+            ->firstOrFail();
 
-        abort_if(empty($vehicle), 404);
-        $vehicle = $vehicle[0];
+        $images = $vehicle->images()->orderBy('sort_order')->get();
 
-        $images = DB::select("
-            SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY sort_order ASC
-        ", [$vehicle->id]);
+        $reviews = $vehicle->reviews()
+            ->where('is_approved', true)
+            ->with('user:id,name,avatar')
+            ->latest()
+            ->limit(5)
+            ->get();
 
-        $reviews = DB::select("
-            SELECT r.*, u.name AS user_name, u.avatar AS user_avatar
-            FROM reviews r
-            INNER JOIN users u ON u.id = r.user_id
-            WHERE r.vehicle_id = ? AND r.is_approved = 1
-            ORDER BY r.created_at DESC
-            LIMIT 5
-        ", [$vehicle->id]);
+        $reviewCount = $vehicle->reviews()->where('is_approved', true)->count();
 
-        $reviewCount = DB::select("SELECT COUNT(*) AS total FROM reviews WHERE vehicle_id = ? AND is_approved = 1", [$vehicle->id])[0]->total;
-
-        $relatedVehicles = DB::select("
-            SELECT v.*,
-                   (SELECT vi.image FROM vehicle_images vi
-                     WHERE vi.vehicle_id = v.id
-                     ORDER BY vi.is_primary DESC, vi.sort_order ASC LIMIT 1) AS primary_image
-            FROM vehicles v
-            WHERE v.status = 'available' AND v.category_id = ? AND v.id != ?
-            LIMIT 4
-        ", [$vehicle->category_id, $vehicle->id]);
+        $relatedVehicles = Vehicle::available()
+            ->where('category_id', $vehicle->category_id)
+            ->where('id', '!=', $vehicle->id)
+            ->withCount(['reviews as review_count' => function ($q) {
+                $q->where('is_approved', true);
+            }])
+            ->with('firstImage')
+            ->limit(4)
+            ->get();
 
         $userHasBookedVehicle = false;
         if (auth()->check()) {
-            $check = DB::select("
-                SELECT id FROM bookings
-                WHERE user_id = ? AND vehicle_id = ? AND booking_status = 'completed'
-                LIMIT 1
-            ", [auth()->id(), $vehicle->id]);
-            $userHasBookedVehicle = !empty($check);
+            $userHasBookedVehicle = $vehicle->bookings()
+                ->where('user_id', auth()->id())
+                ->where('booking_status', 'completed')
+                ->exists();
         }
 
         return view('home.vehicle-detail', compact('vehicle', 'images', 'reviews', 'reviewCount', 'relatedVehicles', 'userHasBookedVehicle'));
@@ -141,17 +108,13 @@ class VehicleController extends Controller
 
         $vehicles = [];
         if (!empty($ids)) {
-            $placeholders = implode(',', array_fill(0, count($ids), '?'));
-            $vehicles = DB::select("
-                SELECT v.*, c.category_name,
-                       (SELECT vi.image FROM vehicle_images vi
-                         WHERE vi.vehicle_id = v.id
-                         ORDER BY vi.is_primary DESC, vi.sort_order ASC LIMIT 1) AS primary_image,
-                       (SELECT COUNT(*) FROM reviews r WHERE r.vehicle_id = v.id AND r.is_approved = 1) AS review_count
-                FROM vehicles v
-                INNER JOIN vehicle_categories c ON c.id = v.category_id
-                WHERE v.id IN ({$placeholders})
-            ", $ids);
+            $vehicles = Vehicle::whereIn('id', $ids)
+                ->with('category')
+                ->withCount(['reviews as review_count' => function ($q) {
+                    $q->where('is_approved', true);
+                }])
+                ->with('firstImage')
+                ->get();
         }
 
         return view('home.compare', compact('vehicles'));
@@ -160,44 +123,27 @@ class VehicleController extends Controller
     public function search(Request $request)
     {
         $query = $request->get('q', '');
-        $like  = "%{$query}%";
 
-        $rows = DB::select("
-            SELECT v.id, v.vehicle_name, v.brand, v.price_per_day, v.slug,
-                   (SELECT vi.image FROM vehicle_images vi
-                     WHERE vi.vehicle_id = v.id
-                     ORDER BY vi.is_primary DESC, vi.sort_order ASC LIMIT 1) AS primary_image
-            FROM vehicles v
-            WHERE v.status = 'available'
-              AND (v.vehicle_name LIKE ? OR v.brand LIKE ? OR v.model LIKE ?)
-            LIMIT 8
-        ", [$like, $like, $like]);
+        $rows = Vehicle::available()
+            ->where(function ($q) use ($query) {
+                $q->where('vehicle_name', 'like', "%{$query}%")
+                    ->orWhere('brand', 'like', "%{$query}%")
+                    ->orWhere('model', 'like', "%{$query}%");
+            })
+            ->with('firstImage')
+            ->select('id', 'vehicle_name', 'brand', 'price_per_day', 'slug')
+            ->limit(8)
+            ->get();
 
-        $results = array_map(function ($v) {
-            return [
-                'id'    => $v->id,
-                'name'  => $v->vehicle_name,
-                'brand' => $v->brand,
-                'price' => $v->price_per_day,
-                'image' => $v->primary_image ? asset('storage/' . $v->primary_image) : asset('images/vehicle-default.jpg'),
-                'url'   => route('vehicles.show', $v->slug),
-            ];
-        }, $rows);
+        $results = $rows->map(fn($v) => [
+            'id'    => $v->id,
+            'name'  => $v->vehicle_name,
+            'brand' => $v->brand,
+            'price' => $v->price_per_day,
+            'image' => $v->primary_image ? asset('storage/' . $v->primary_image) : asset('images/vehicle-default.jpg'),
+            'url'   => route('vehicles.show', $v->slug),
+        ])->toArray();
 
         return response()->json($results);
-    }
-
-    private function makePaginator(array $items, int $total, int $perPage, int $page, Request $request)
-    {
-        return new \Illuminate\Pagination\LengthAwarePaginator(
-            $items,
-            $total,
-            $perPage,
-            $page,
-            [
-                'path'  => $request->url(),
-                'query' => $request->query(),
-            ]
-        );
     }
 }

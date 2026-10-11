@@ -35,7 +35,7 @@
             <tbody>
                 @forelse($records as $r)
                 <tr>
-                    <td class="fw-semibold small">{{ $r->vehicle_name }}</td>
+                    <td class="fw-semibold small">{{ $r->vehicle?->vehicle_name ?? $r->vehicle_name ?? 'N/A' }}</td>
                     <td class="small">{{ $r->maintenance_type }}</td>
                     <td class="small">{{ \Carbon\Carbon::parse($r->maintenance_date)->format('M d, Y') }}</td>
                     <td class="small text-muted">{{ $r->next_maintenance_date ? \Carbon\Carbon::parse($r->next_maintenance_date)->format('M d, Y') : 'N/A' }}</td>

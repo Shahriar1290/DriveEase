@@ -20,15 +20,14 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <img src="{{ vehicle_image_url($v->primary_image) }}" class="rounded" width="44" height="33" style="object-fit:cover"
-                                 onerror="this.src='https://placehold.co/44x33/1e40af/fff?text=V'">
+                            <img src="{{ vehicle_image_url($v->primary_image) }}" class="rounded" width="44" height="33" style="object-fit:cover">
                             <div>
                                 <div class="fw-semibold small">{{ $v->vehicle_name }}</div>
                                 <div class="text-muted" style="font-size:11px">{{ $v->registration_number }}</div>
                             </div>
                         </div>
                     </td>
-                    <td class="small">{{ $v->category_name }}</td>
+                    <td class="small">{{ $v->category?->category_name ?? $v->category_name ?? 'N/A' }}</td>
                     <td class="small">TK {{ number_format($v->price_per_day,2) }}</td>
                     <td><span class="badge bg-primary-subtle text-primary">{{ $v->total_rentals }}</span></td>
                     <td>{{ $v->completed_bookings }}</td>

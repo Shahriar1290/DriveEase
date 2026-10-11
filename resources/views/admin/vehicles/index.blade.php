@@ -56,8 +56,7 @@
                     <td class="text-muted small">{{ $v->id }}</td>
                     <td>
                         <div class="d-flex align-items-center gap-3">
-                            <img src="{{ vehicle_image_url($v->primary_image) }}" class="rounded" width="50" height="38" style="object-fit:cover"
-                                 onerror="this.src='https://placehold.co/50x38/1e40af/fff?text=V'">
+                            <img src="{{ vehicle_image_url($v->primary_image) }}" class="rounded" width="50" height="38" style="object-fit:cover">
                             <div>
                                 <div class="fw-semibold">{{ $v->vehicle_name }}</div>
                                 <div class="text-muted small">{{ $v->brand }} {{ $v->model }} {{ $v->year }}</div>

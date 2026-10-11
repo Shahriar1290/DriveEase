@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\Review;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ReviewController extends Controller
 {
@@ -19,30 +20,27 @@ class ReviewController extends Controller
 
         $userId = auth()->id();
 
-        // Verify the user completed a booking for this vehicle
-        $hasBooking = DB::select("
-            SELECT id FROM bookings
-            WHERE user_id = ? AND vehicle_id = ? AND booking_status = 'completed'
-            LIMIT 1
-        ", [$userId, $request->vehicle_id]);
+        $hasBooking = Booking::where('user_id', $userId)
+            ->where('vehicle_id', $request->vehicle_id)
+            ->where('booking_status', 'completed')
+            ->exists();
 
-        if (empty($hasBooking)) {
+        if (!$hasBooking) {
             return back()->with('error', 'You can only review vehicles you have rented.');
         }
 
-        // Prevent duplicate review
-        $alreadyReviewed = DB::select("
-            SELECT id FROM reviews WHERE user_id = ? AND vehicle_id = ? LIMIT 1
-        ", [$userId, $request->vehicle_id]);
-
-        if (!empty($alreadyReviewed)) {
+        if (Review::where('user_id', $userId)->where('vehicle_id', $request->vehicle_id)->exists()) {
             return back()->with('error', 'You have already reviewed this vehicle.');
         }
 
-        DB::insert("
-            INSERT INTO reviews (user_id, vehicle_id, booking_id, rating, review, is_approved, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, 0, NOW(), NOW())
-        ", [$userId, $request->vehicle_id, $request->booking_id, $request->rating, $request->review]);
+        Review::create([
+            'user_id' => $userId,
+            'vehicle_id' => $request->vehicle_id,
+            'booking_id' => $request->booking_id,
+            'rating' => $request->rating,
+            'review' => $request->review,
+            'is_approved' => false,
+        ]);
 
         return back()->with('success', 'Review submitted! It will appear after approval.');
     }

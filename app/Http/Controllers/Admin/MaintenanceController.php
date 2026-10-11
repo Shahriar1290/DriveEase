@@ -3,58 +3,32 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\MaintenanceRecord;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class MaintenanceController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = 15;
-        $page    = max(1, (int) $request->get('page', 1));
-        $offset  = ($page - 1) * $perPage;
-
-        $where    = ['1=1'];
-        $bindings = [];
+        $query = MaintenanceRecord::with('vehicle:id,vehicle_name');
 
         if ($s = $request->search) {
-            $where[]    = "v.vehicle_name LIKE ?";
-            $bindings[] = "%{$s}%";
+            $query->whereHas('vehicle', fn($q) => $q->where('vehicle_name', 'like', "%{$s}%"));
         }
         if ($status = $request->status) {
-            $where[]    = "m.status = ?";
-            $bindings[] = $status;
+            $query->where('status', $status);
         }
-        $whereSql = implode(' AND ', $where);
 
-        $total = DB::select("
-            SELECT COUNT(*) AS total FROM maintenance_records m
-            INNER JOIN vehicles v ON v.id = m.vehicle_id
-            WHERE {$whereSql}
-        ", $bindings)[0]->total;
-
-        $rows = DB::select("
-            SELECT m.*, v.vehicle_name
-            FROM maintenance_records m
-            INNER JOIN vehicles v ON v.id = m.vehicle_id
-            WHERE {$whereSql}
-            ORDER BY m.maintenance_date DESC
-            LIMIT {$perPage} OFFSET {$offset}
-        ", $bindings);
-
-        $records = new \Illuminate\Pagination\LengthAwarePaginator(
-            $rows, $total, $perPage, $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
-
-        $totalCost = DB::select("SELECT COALESCE(SUM(cost),0) AS total FROM maintenance_records")[0]->total;
+        $records = $query->orderByDesc('maintenance_date')->paginate(15)->withQueryString();
+        $totalCost = MaintenanceRecord::sum('cost');
 
         return view('admin.maintenance.index', compact('records', 'totalCost'));
     }
 
     public function create()
     {
-        $vehicles = DB::select("SELECT * FROM vehicles ORDER BY vehicle_name ASC");
+        $vehicles = Vehicle::orderBy('vehicle_name')->get();
         return view('admin.maintenance.create', compact('vehicles'));
     }
 
@@ -72,19 +46,10 @@ class MaintenanceController extends Controller
             'service_center'         => 'nullable|string|max:255',
         ]);
 
-        DB::insert("
-            INSERT INTO maintenance_records (
-                vehicle_id, maintenance_date, next_maintenance_date, maintenance_type,
-                description, cost, status, mechanic_name, service_center, created_at, updated_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-        ", [
-            $data['vehicle_id'], $data['maintenance_date'], $data['next_maintenance_date'] ?? null,
-            $data['maintenance_type'], $data['description'], $data['cost'], $data['status'],
-            $data['mechanic_name'] ?? null, $data['service_center'] ?? null,
-        ]);
+        MaintenanceRecord::create($data);
 
         if ($data['status'] === 'in_progress') {
-            DB::update("UPDATE vehicles SET status = 'maintenance', updated_at = NOW() WHERE id = ?", [$data['vehicle_id']]);
+            Vehicle::where('id', $data['vehicle_id'])->update(['status' => 'maintenance']);
         }
 
         return redirect()->route('admin.maintenance.index')->with('success', 'Maintenance record added.');
@@ -92,17 +57,15 @@ class MaintenanceController extends Controller
 
     public function edit(int $id)
     {
-        $maintenance = DB::select("SELECT * FROM maintenance_records WHERE id = ? LIMIT 1", [$id]);
-        abort_if(empty($maintenance), 404);
+        $maintenance = MaintenanceRecord::findOrFail($id);
+        $vehicles = Vehicle::orderBy('vehicle_name')->get();
 
-        $vehicles = DB::select("SELECT * FROM vehicles ORDER BY vehicle_name ASC");
-
-        return view('admin.maintenance.edit', ['maintenance' => $maintenance[0], 'vehicles' => $vehicles]);
+        return view('admin.maintenance.create', compact('maintenance', 'vehicles'));
     }
 
     public function update(Request $request, int $id)
     {
-        abort_if(empty(DB::select("SELECT id FROM maintenance_records WHERE id = ? LIMIT 1", [$id])), 404);
+        $maintenance = MaintenanceRecord::findOrFail($id);
 
         $data = $request->validate([
             'vehicle_id'             => 'required|integer',
@@ -116,21 +79,12 @@ class MaintenanceController extends Controller
             'service_center'         => 'nullable|string|max:255',
         ]);
 
-        DB::update("
-            UPDATE maintenance_records SET
-                vehicle_id = ?, maintenance_date = ?, next_maintenance_date = ?, maintenance_type = ?,
-                description = ?, cost = ?, status = ?, mechanic_name = ?, service_center = ?, updated_at = NOW()
-            WHERE id = ?
-        ", [
-            $data['vehicle_id'], $data['maintenance_date'], $data['next_maintenance_date'] ?? null,
-            $data['maintenance_type'], $data['description'], $data['cost'], $data['status'],
-            $data['mechanic_name'] ?? null, $data['service_center'] ?? null, $id,
-        ]);
+        $maintenance->update($data);
 
         if ($data['status'] === 'completed') {
-            DB::update("UPDATE vehicles SET status = 'available', updated_at = NOW() WHERE id = ?", [$data['vehicle_id']]);
+            Vehicle::where('id', $data['vehicle_id'])->update(['status' => 'available']);
         } elseif ($data['status'] === 'in_progress') {
-            DB::update("UPDATE vehicles SET status = 'maintenance', updated_at = NOW() WHERE id = ?", [$data['vehicle_id']]);
+            Vehicle::where('id', $data['vehicle_id'])->update(['status' => 'maintenance']);
         }
 
         return redirect()->route('admin.maintenance.index')->with('success', 'Record updated.');
@@ -138,7 +92,7 @@ class MaintenanceController extends Controller
 
     public function destroy(int $id)
     {
-        DB::delete("DELETE FROM maintenance_records WHERE id = ?", [$id]);
+        MaintenanceRecord::findOrFail($id)->delete();
         return redirect()->route('admin.maintenance.index')->with('success', 'Record deleted.');
     }
 }

@@ -28,8 +28,7 @@
             <div class="row g-2">
                 @forelse($images as $img)
                 <div class="col-4 col-md-3">
-                    <img src="{{ vehicle_image_url($img->image) }}" class="rounded w-100" style="height:90px;object-fit:cover"
-                         onerror="this.src='https://placehold.co/200x90/1e40af/fff?text=V'">
+                    <img src="{{ vehicle_image_url($img->image) }}" class="rounded w-100" style="height:90px;object-fit:cover">
                     @if($img->is_primary)<span class="badge bg-primary" style="font-size:9px">Primary</span>@endif
                 </div>
                 @empty
@@ -43,7 +42,7 @@
             <h6 class="fw-bold mb-3">Specifications</h6>
             <div class="row g-2">
                 @foreach([
-                    ['Category',     $vehicle->category_name],
+                    ['Category',     $vehicle->category?->category_name ?? $vehicle->category_name ?? 'N/A'],
                     ['Brand',        $vehicle->brand],
                     ['Model',        $vehicle->model],
                     ['Year',         $vehicle->year],
@@ -97,7 +96,7 @@
                         @forelse($bookings as $b)
                         <tr>
                             <td class="small">{{ $b->booking_number }}</td>
-                            <td class="small">{{ $b->user_name }}</td>
+                            <td class="small">{{ $b->user?->name ?? $b->user_name ?? 'N/A' }}</td>
                             <td class="small">{{ \Carbon\Carbon::parse($b->pickup_date)->format('M d') }} – {{ \Carbon\Carbon::parse($b->return_date)->format('M d, Y') }}</td>
                             <td class="small">TK {{ number_format($b->final_amount,0) }}</td>
                             <td>{!! booking_status_badge($b->booking_status) !!}</td>
@@ -126,7 +125,7 @@
                 <h6 class="fw-bold mb-0">Maintenance</h6>
                 <a href="{{ route('admin.maintenance.create') }}" class="btn btn-sm btn-outline-primary">Add</a>
             </div>
-            @forelse(array_slice($maintenanceRecords, 0, 4) as $m)
+            @forelse(collect($maintenanceRecords)->take(4) as $m)
             <div class="d-flex justify-content-between mb-2 pb-2 border-bottom small">
                 <div>
                     <div class="fw-semibold">{{ $m->maintenance_type }}</div>
@@ -148,7 +147,7 @@
             @forelse($reviews as $r)
             <div class="mb-3 pb-2 border-bottom">
                 <div class="d-flex justify-content-between">
-                    <span class="fw-semibold small">{{ $r->user_name }}</span>
+                    <span class="fw-semibold small">{{ $r->user?->name ?? $r->user_name ?? 'Customer' }}</span>
                     <div>@for($i=1;$i<=5;$i++)<i class="fas fa-star {{ $i<=$r->rating?'text-warning':'text-muted' }}" style="font-size:10px"></i>@endfor</div>
                 </div>
                 <p class="text-muted small mb-0">{{ Str::limit($r->review, 80) }}</p>

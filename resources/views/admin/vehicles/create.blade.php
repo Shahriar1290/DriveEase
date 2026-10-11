@@ -102,7 +102,7 @@
                                value="{{ old('seating_capacity', $vehicle->seating_capacity ?? 5) }}" required>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-semibold small">Price Per Day ($) <span class="text-danger">*</span></label>
+                        <label class="form-label fw-semibold small">Price Per Day (TK) <span class="text-danger">*</span></label>
                         <input type="number" name="price_per_day" class="form-control" step="0.01" min="0"
                                value="{{ old('price_per_day', $vehicle->price_per_day ?? '') }}" required>
                     </div>

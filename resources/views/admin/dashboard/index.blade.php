@@ -88,8 +88,8 @@
                         @foreach($recentBookings as $b)
                         <tr>
                             <td class="fw-semibold small">{{ $b->booking_number }}</td>
-                            <td class="small">{{ $b->user_name }}</td>
-                            <td class="small">{{ $b->vehicle_name }}</td>
+                            <td class="small">{{ $b->user?->name ?? $b->user_name ?? 'N/A' }}</td>
+                            <td class="small">{{ $b->vehicle?->vehicle_name ?? $b->vehicle_name ?? 'N/A' }}</td>
                             <td class="small fw-semibold">TK {{ number_format($b->final_amount,0) }}</td>
                             <td>{!! booking_status_badge($b->booking_status) !!}</td>
                             <td><a href="{{ route('admin.bookings.show', $b->id) }}" class="btn btn-xs btn-light border btn-sm py-0 px-2"><i class="fas fa-eye"></i></a></td>
@@ -110,8 +110,7 @@
             </div>
             @foreach($topVehicles as $v)
             <div class="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom">
-                <img src="{{ vehicle_image_url($v->primary_image) }}" class="rounded" width="48" height="40" style="object-fit:cover"
-                     onerror="this.src='https://placehold.co/48x40/1e40af/fff?text=V'">
+                <img src="{{ vehicle_image_url($v->primary_image) }}" class="rounded" width="48" height="40" style="object-fit:cover">
                 <div class="flex-grow-1 overflow-hidden">
                     <div class="fw-semibold small text-truncate">{{ $v->vehicle_name }}</div>
                     <div class="text-muted" style="font-size:11px">{{ $v->total_rentals }} rentals · TK {{ number_format($v->price_per_day) }}/day</div>
@@ -157,7 +156,7 @@
                     <i class="fas fa-wrench text-warning"></i>
                 </div>
                 <div>
-                    <div class="fw-semibold small">{{ $m->vehicle_name }}</div>
+                    <div class="fw-semibold small">{{ $m->vehicle?->vehicle_name ?? $m->vehicle_name ?? 'N/A' }}</div>
                     <div class="text-muted" style="font-size:11px">{{ $m->maintenance_type }} · {{ \Carbon\Carbon::parse($m->maintenance_date)->format('M d, Y') }}</div>
                     <div class="text-muted" style="font-size:11px">Est. cost: TK {{ number_format($m->cost,0) }}</div>
                 </div>

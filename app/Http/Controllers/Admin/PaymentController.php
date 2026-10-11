@@ -3,89 +3,55 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class PaymentController extends Controller
 {
     public function index(Request $request)
     {
-        $perPage = 15;
-        $page    = max(1, (int) $request->get('page', 1));
-        $offset  = ($page - 1) * $perPage;
-
-        $where    = ['1=1'];
-        $bindings = [];
+        $query = Payment::with(['booking.user:id,name', 'booking.vehicle:id,vehicle_name']);
 
         if ($s = $request->search) {
-            $where[]    = "(p.transaction_id LIKE ? OR b.booking_number LIKE ?)";
-            $like       = "%{$s}%";
-            $bindings[] = $like; $bindings[] = $like;
+            $query->where(function ($q) use ($s) {
+                $q->where('transaction_id', 'like', "%{$s}%")
+                    ->orWhereHas('booking', fn($bq) => $bq->where('booking_number', 'like', "%{$s}%"));
+            });
         }
         if ($status = $request->status) {
-            $where[]    = "p.payment_status = ?";
-            $bindings[] = $status;
+            $query->where('payment_status', $status);
         }
         if ($method = $request->method) {
-            $where[]    = "p.payment_method = ?";
-            $bindings[] = $method;
+            $query->where('payment_method', $method);
         }
-        $whereSql = implode(' AND ', $where);
 
-        $total = DB::select("
-            SELECT COUNT(*) AS total FROM payments p
-            INNER JOIN bookings b ON b.id = p.booking_id
-            WHERE {$whereSql}
-        ", $bindings)[0]->total;
+        $payments = $query->latest()->paginate(15)->withQueryString();
 
-        $rows = DB::select("
-            SELECT p.*, b.booking_number, u.name AS user_name, v.vehicle_name
-            FROM payments p
-            INNER JOIN bookings b ON b.id = p.booking_id
-            INNER JOIN users u ON u.id = b.user_id
-            INNER JOIN vehicles v ON v.id = b.vehicle_id
-            WHERE {$whereSql}
-            ORDER BY p.created_at DESC
-            LIMIT {$perPage} OFFSET {$offset}
-        ", $bindings);
-
-        $payments = new \Illuminate\Pagination\LengthAwarePaginator(
-            $rows, $total, $perPage, $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
-
-        $totalRevenue = DB::select("SELECT COALESCE(SUM(amount),0) AS total FROM payments WHERE payment_status = 'completed'")[0]->total;
+        $totalRevenue = Payment::where('payment_status', 'completed')->sum('amount');
 
         return view('admin.payments.index', compact('payments', 'totalRevenue'));
     }
 
     public function show(int $id)
     {
-        $payment = DB::select("
-            SELECT p.*, b.booking_number, b.id AS booking_id, u.name AS user_name
-            FROM payments p
-            INNER JOIN bookings b ON b.id = p.booking_id
-            INNER JOIN users u ON u.id = b.user_id
-            WHERE p.id = ? LIMIT 1
-        ", [$id]);
-        abort_if(empty($payment), 404);
+        $payment = Payment::with(['booking.user:id,name', 'booking:id,booking_number,user_id'])
+            ->findOrFail($id);
 
-        return view('admin.payments.show', ['payment' => $payment[0]]);
+        return view('admin.payments.show', compact('payment'));
     }
 
     public function updateStatus(Request $request, int $id)
     {
         $request->validate(['payment_status' => 'required|in:pending,completed,failed,refunded']);
 
+        $payment = Payment::findOrFail($id);
+
+        $data = ['payment_status' => $request->payment_status];
         if ($request->payment_status === 'completed') {
-            DB::update("
-                UPDATE payments SET payment_status = ?, payment_date = NOW(), updated_at = NOW() WHERE id = ?
-            ", [$request->payment_status, $id]);
-        } else {
-            DB::update("
-                UPDATE payments SET payment_status = ?, updated_at = NOW() WHERE id = ?
-            ", [$request->payment_status, $id]);
+            $data['payment_date'] = now();
         }
+
+        $payment->update($data);
 
         return back()->with('success', 'Payment status updated.');
     }

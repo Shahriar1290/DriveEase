@@ -3,6 +3,11 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\Notification;
+use App\Models\Payment;
+use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -11,15 +16,9 @@ class BookingController extends Controller
 {
     public function create(Request $request, string $slug)
     {
-        $vehicle = DB::select("
-            SELECT v.*,
-                   (SELECT vi.image FROM vehicle_images vi
-                     WHERE vi.vehicle_id = v.id
-                     ORDER BY vi.is_primary DESC, vi.sort_order ASC LIMIT 1) AS primary_image
-            FROM vehicles v WHERE v.slug = ? LIMIT 1
-        ", [$slug]);
-        abort_if(empty($vehicle), 404);
-        $vehicle = $vehicle[0];
+        $vehicle = Vehicle::with('firstImage')
+            ->where('slug', $slug)
+            ->firstOrFail();
 
         if ($vehicle->status !== 'available') {
             return back()->with('error', 'This vehicle is not currently available.');
@@ -40,99 +39,89 @@ class BookingController extends Controller
             'payment_method'   => 'required|in:cash,card,mobile_banking,bank_transfer',
         ]);
 
-        $vehicleRow = DB::select("SELECT * FROM vehicles WHERE id = ? LIMIT 1", [$request->vehicle_id]);
-        if (empty($vehicleRow)) {
-            return back()->with('error', 'Vehicle not found.')->withInput();
-        }
-        $vehicle = $vehicleRow[0];
-
-        if ($vehicle->status !== 'available') {
-            return back()->with('error', 'This vehicle is not currently available.')->withInput();
-        }
-
-        // Conflict check — raw SQL date-overlap detection
-        $conflict = DB::select("
-            SELECT id FROM bookings
-            WHERE vehicle_id = ?
-              AND booking_status IN ('approved', 'active')
-              AND (
-                    pickup_date BETWEEN ? AND ?
-                 OR return_date BETWEEN ? AND ?
-                 OR (pickup_date <= ? AND return_date >= ?)
-              )
-            LIMIT 1
-        ", [
-            $request->vehicle_id,
-            $request->pickup_date, $request->return_date,
-            $request->pickup_date, $request->return_date,
-            $request->pickup_date, $request->return_date,
-        ]);
-
-        if (!empty($conflict)) {
-            return back()->with('error', 'This vehicle is already booked for the selected dates.')->withInput();
-        }
-
-        $pickup = \Carbon\Carbon::parse($request->pickup_date);
-        $return = \Carbon\Carbon::parse($request->return_date);
-        $days   = $pickup->diffInDays($return);
-        $total  = $days * $vehicle->price_per_day;
-        $tax    = $total * 0.05;
-        $final  = $total + $tax;
-
-        $bookingNumber = 'BK-' . strtoupper(Str::random(8));
-
         DB::beginTransaction();
         try {
-            DB::insert("
-                INSERT INTO bookings (
-                    booking_number, user_id, vehicle_id, pickup_date, return_date,
-                    total_days, price_per_day, total_cost, discount, tax, final_amount,
-                    pickup_location, return_location, special_requests, booking_status,
-                    created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, 'pending', NOW(), NOW())
-            ", [
-                $bookingNumber, auth()->id(), $vehicle->id,
-                $request->pickup_date, $request->return_date,
-                $days, $vehicle->price_per_day, $total, $tax, $final,
-                $request->pickup_location, $request->return_location, $request->special_requests,
+            $vehicle = Vehicle::lockForUpdate()->find($request->vehicle_id);
+            if (!$vehicle || $vehicle->status !== 'available') {
+                DB::rollBack();
+                return back()->with('error', 'Vehicle not found or no longer available.')->withInput();
+            }
+
+            $conflict = Booking::where('vehicle_id', $request->vehicle_id)
+                ->whereIn('booking_status', ['approved', 'active'])
+                ->where(function ($q) use ($request) {
+                    $q->where('pickup_date', '<', $request->return_date)
+                      ->where('return_date', '>', $request->pickup_date);
+                })
+                ->exists();
+
+            if ($conflict) {
+                DB::rollBack();
+                return back()->with('error', 'This vehicle is already booked for the selected dates.')->withInput();
+            }
+
+            $pickup = \Carbon\Carbon::parse($request->pickup_date);
+            $return = \Carbon\Carbon::parse($request->return_date);
+            $days   = max(1, (int) $pickup->diffInDays($return));
+            $total  = $days * $vehicle->price_per_day;
+            $tax    = $total * 0.05;
+            $final  = $total + $tax;
+
+            $bookingNumber = 'BK-' . strtoupper(Str::random(8));
+            $booking = Booking::create([
+                'booking_number' => $bookingNumber,
+                'user_id' => auth()->id(),
+                'vehicle_id' => $vehicle->id,
+                'pickup_date' => $request->pickup_date,
+                'return_date' => $request->return_date,
+                'total_days' => $days,
+                'price_per_day' => $vehicle->price_per_day,
+                'total_cost' => $total,
+                'discount' => 0,
+                'tax' => $tax,
+                'final_amount' => $final,
+                'pickup_location' => $request->pickup_location,
+                'return_location' => $request->return_location,
+                'special_requests' => $request->special_requests,
+                'booking_status' => 'pending',
             ]);
-            $bookingId = DB::getPdo()->lastInsertId();
 
-            $transactionId = 'TXN-' . strtoupper(Str::random(10));
-            $receiptNumber = 'RCP-' . date('Ymd') . '-' . strtoupper(Str::random(6));
-
-            DB::insert("
-                INSERT INTO payments (
-                    transaction_id, booking_id, amount, payment_method, payment_status,
-                    receipt_number, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, 'pending', ?, NOW(), NOW())
-            ", [$transactionId, $bookingId, $final, $request->payment_method, $receiptNumber]);
-
-            DB::insert("
-                INSERT INTO notifications (user_id, title, message, type, link, status, created_at, updated_at)
-                VALUES (?, 'Booking Submitted', ?, 'info', ?, 'unread', NOW(), NOW())
-            ", [
-                auth()->id(),
-                "Your booking #{$bookingNumber} has been submitted and is awaiting approval.",
-                route('customer.bookings.show', $bookingId),
+            Payment::create([
+                'transaction_id' => 'TXN-' . strtoupper(Str::random(10)),
+                'booking_id' => $booking->id,
+                'amount' => $final,
+                'payment_method' => $request->payment_method,
+                'payment_status' => 'pending',
+                'receipt_number' => 'RCP-' . date('Ymd') . '-' . strtoupper(Str::random(6)),
             ]);
 
-            // Notify all admins
-            $admins = DB::select("SELECT id FROM users WHERE role = 'admin'");
-            foreach ($admins as $admin) {
-                DB::insert("
-                    INSERT INTO notifications (user_id, title, message, type, link, status, created_at, updated_at)
-                    VALUES (?, 'New Booking', ?, 'warning', ?, 'unread', NOW(), NOW())
-                ", [
-                    $admin->id,
-                    "New booking #{$bookingNumber} requires your approval.",
-                    route('admin.bookings.show', $bookingId),
-                ]);
+            Notification::create([
+                'user_id' => auth()->id(),
+                'title' => 'Booking Submitted',
+                'message' => "Your booking #{$bookingNumber} has been submitted and is awaiting approval.",
+                'type' => 'info',
+                'link' => route('customer.bookings.show', $booking->id),
+                'status' => 'unread',
+            ]);
+
+            $adminIds = User::where('role', 'admin')->pluck('id');
+            if ($adminIds->isNotEmpty()) {
+                Notification::insert($adminIds->map(fn($adminId) => [
+                    'user_id' => $adminId,
+                    'title' => 'New Booking',
+                    'message' => "New booking #{$bookingNumber} requires your approval.",
+                    'type' => 'warning',
+                    'link' => route('admin.bookings.show', $booking->id),
+                    'status' => 'unread',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ])->toArray());
             }
 
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
+            report($e);
             return back()->with('error', 'Something went wrong while creating your booking. Please try again.')->withInput();
         }
 
@@ -141,31 +130,11 @@ class BookingController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = 10;
-        $page    = max(1, (int) $request->get('page', 1));
-        $offset  = ($page - 1) * $perPage;
-
-        $total = DB::select("SELECT COUNT(*) AS total FROM bookings WHERE user_id = ?", [auth()->id()])[0]->total;
-
-        $rows = DB::select("
-            SELECT b.*,
-                   v.vehicle_name, v.slug AS vehicle_slug,
-                   (SELECT vi.image FROM vehicle_images vi
-                     WHERE vi.vehicle_id = v.id
-                     ORDER BY vi.is_primary DESC, vi.sort_order ASC LIMIT 1) AS primary_image,
-                   p.payment_method, p.payment_status
-            FROM bookings b
-            INNER JOIN vehicles v ON v.id = b.vehicle_id
-            LEFT JOIN payments p ON p.booking_id = b.id
-            WHERE b.user_id = ?
-            ORDER BY b.created_at DESC
-            LIMIT {$perPage} OFFSET {$offset}
-        ", [auth()->id()]);
-
-        $bookings = new \Illuminate\Pagination\LengthAwarePaginator(
-            $rows, $total, $perPage, $page,
-            ['path' => $request->url(), 'query' => $request->query()]
-        );
+        $bookings = Booking::with(['vehicle:id,vehicle_name,slug', 'vehicle.firstImage', 'payment:id,payment_method,payment_status'])
+            ->where('user_id', auth()->id())
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return view('customer.bookings.index', compact('bookings'));
     }
@@ -174,17 +143,13 @@ class BookingController extends Controller
     {
         $booking = $this->authorizedBooking($bookingId);
 
-        $vehicle = DB::select("
-            SELECT v.*,
-                   (SELECT vi.image FROM vehicle_images vi
-                     WHERE vi.vehicle_id = v.id
-                     ORDER BY vi.is_primary DESC, vi.sort_order ASC LIMIT 1) AS primary_image
-            FROM vehicles v WHERE v.id = ? LIMIT 1
-        ", [$booking->vehicle_id])[0];
-        $payment = DB::select("SELECT * FROM payments WHERE booking_id = ? LIMIT 1", [$booking->id]);
-        $payment = $payment[0] ?? null;
+        $booking->load([
+            'vehicle:id,vehicle_name,slug',
+            'vehicle.firstImage',
+            'payment',
+        ]);
 
-        return view('customer.bookings.show', compact('booking', 'vehicle', 'payment'));
+        return view('customer.bookings.show', ['booking' => $booking, 'vehicle' => $booking->vehicle, 'payment' => $booking->payment]);
     }
 
     public function cancel(int $bookingId)
@@ -195,12 +160,40 @@ class BookingController extends Controller
             return back()->with('error', 'This booking cannot be cancelled.');
         }
 
-        DB::update("UPDATE bookings SET booking_status = 'cancelled', updated_at = NOW() WHERE id = ?", [$booking->id]);
+        $wasApproved = $booking->booking_status === 'approved';
 
-        DB::insert("
-            INSERT INTO notifications (user_id, title, message, type, status, created_at, updated_at)
-            VALUES (?, 'Booking Cancelled', ?, 'warning', 'unread', NOW(), NOW())
-        ", [auth()->id(), "Your booking #{$booking->booking_number} has been cancelled."]);
+        DB::beginTransaction();
+        try {
+            $booking->update(['booking_status' => 'cancelled']);
+
+            if ($wasApproved) {
+                $today = now()->toDateString();
+                $hasOtherActive = Booking::where('vehicle_id', $booking->vehicle_id)
+                    ->where('id', '!=', $booking->id)
+                    ->whereIn('booking_status', ['active', 'approved'])
+                    ->where('pickup_date', '<=', $today)
+                    ->where('return_date', '>=', $today)
+                    ->exists();
+
+                if (!$hasOtherActive && $booking->vehicle->status === 'rented') {
+                    $booking->vehicle->update(['status' => 'available']);
+                }
+            }
+
+            Notification::create([
+                'user_id' => auth()->id(),
+                'title' => 'Booking Cancelled',
+                'message' => "Your booking #{$booking->booking_number} has been cancelled.",
+                'type' => 'warning',
+                'status' => 'unread',
+            ]);
+
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+            return back()->with('error', 'Failed to cancel booking.');
+        }
 
         return back()->with('success', 'Booking cancelled successfully.');
     }
@@ -209,24 +202,19 @@ class BookingController extends Controller
     {
         $booking = $this->authorizedBooking($bookingId);
 
-        $vehicle = DB::select("SELECT * FROM vehicles WHERE id = ? LIMIT 1", [$booking->vehicle_id])[0];
-        $payment = DB::select("SELECT * FROM payments WHERE booking_id = ? LIMIT 1", [$booking->id]);
-        $payment = $payment[0] ?? null;
-        $user    = DB::select("SELECT * FROM users WHERE id = ? LIMIT 1", [$booking->user_id])[0];
+        $booking->load(['vehicle', 'payment', 'user']);
 
-        return view('customer.bookings.invoice', compact('booking', 'vehicle', 'payment', 'user'));
+        return view('customer.bookings.invoice', [
+            'booking' => $booking,
+            'user'    => $booking->user,
+            'vehicle' => $booking->vehicle,
+            'payment' => $booking->payment,
+        ]);
     }
 
-    /**
-     * Fetch a booking by id and manually enforce that it belongs to the
-     * logged-in customer (or to an admin), replicating what a Laravel
-     * Policy would do — but as a plain raw-SQL ownership check.
-     */
     private function authorizedBooking(int $bookingId, bool $requireOwnerOnly = false)
     {
-        $row = DB::select("SELECT * FROM bookings WHERE id = ? LIMIT 1", [$bookingId]);
-        abort_if(empty($row), 404);
-        $booking = $row[0];
+        $booking = Booking::findOrFail($bookingId);
 
         $isOwner = (int) $booking->user_id === (int) auth()->id();
         $isAdmin = auth()->user()->isAdmin();

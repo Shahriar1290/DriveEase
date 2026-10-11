@@ -36,15 +36,15 @@
             <div class="col-md-4">
                 <label class="form-label fw-semibold small">Maintenance Date <span class="text-danger">*</span></label>
                 <input type="date" name="maintenance_date" class="form-control" required
-                       value="{{ old('maintenance_date', isset($maintenance) ? substr($maintenance->maintenance_date, 0, 10) : '') }}">
+                       value="{{ old('maintenance_date', isset($maintenance) && $maintenance->maintenance_date ? \Carbon\Carbon::parse($maintenance->maintenance_date)->format('Y-m-d') : '') }}">
             </div>
             <div class="col-md-4">
                 <label class="form-label fw-semibold small">Next Maintenance Date</label>
                 <input type="date" name="next_maintenance_date" class="form-control"
-                       value="{{ old('next_maintenance_date', isset($maintenance) ? substr($maintenance->next_maintenance_date ?? '', 0, 10) : '') }}">
+                       value="{{ old('next_maintenance_date', isset($maintenance) && $maintenance->next_maintenance_date ? \Carbon\Carbon::parse($maintenance->next_maintenance_date)->format('Y-m-d') : '') }}">
             </div>
             <div class="col-md-4">
-                <label class="form-label fw-semibold small">Cost ($) <span class="text-danger">*</span></label>
+                <label class="form-label fw-semibold small">Cost (TK) <span class="text-danger">*</span></label>
                 <input type="number" name="cost" class="form-control" step="0.01" min="0" required
                        value="{{ old('cost', $maintenance->cost ?? '') }}">
             </div>

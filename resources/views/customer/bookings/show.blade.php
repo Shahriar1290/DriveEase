@@ -23,8 +23,7 @@
         <h6 class="fw-semibold mb-3 small text-muted text-uppercase">Vehicle</h6>
         <div class="d-flex gap-3">
             <img src="{{ vehicle_image_url($vehicle->primary_image ?? null) }}" class="rounded-2 flex-shrink-0"
-                 width="120" height="80" style="object-fit:cover"
-                 onerror="this.src='https://placehold.co/120x80/1e40af/fff?text=V'">
+                 width="120" height="80" style="object-fit:cover">
             <div>
                 <h6 class="fw-bold mb-1">{{ $vehicle->vehicle_name }}</h6>
                 <p class="text-muted small mb-1">{{ $vehicle->brand }} {{ $vehicle->model }} {{ $vehicle->year }}</p>
