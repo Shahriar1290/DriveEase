@@ -20,6 +20,14 @@ A full-stack car rental platform built with **Laravel 12**. Customers browse, co
 
 ---
 
+## 🎬 Demo Video
+
+[![DriveEase demo: search, compare, book and manage, in 22 seconds](media/driveease-demo.jpg)](media/driveease-demo.mp4)
+
+▶️ [Watch the 22-second demo](media/driveease-demo.mp4): live search → compare → book with an instant TK total → admin dashboard.
+
+---
+
 ## 📖 Overview
 
 DriveEase is a complete vehicle rental management system with three distinct experiences that share one visual language:
